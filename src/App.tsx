@@ -1,36 +1,24 @@
-import { useState, useRef } from 'react';
-import { Camera, RefreshCw, Eye, EyeOff, LayoutGrid } from 'lucide-react';
-import { FaceTracker } from './components/FaceTracker';
-import { CameraManager } from './components/CameraManager';
-import { VTOOverlay } from './components/VTOOverlay';
+import { useState } from 'react';
+import { Camera, RefreshCw, Settings, Check } from 'lucide-react';
+import { JeelizVTO } from './components/JeelizVTO';
 import { useAppStore } from './store';
 import { GLASSES_CATALOG } from './catalog/glasses';
 
 function App() {
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingText, setLoadingText] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const { 
-    showDots, showGlasses, selectedGlassesId, 
-    setShowDots, setShowGlasses, setSelectedGlassesId 
+    selectedGlassesId, setSelectedGlassesId,
+    isAdjustMode, setAdjustMode
   } = useAppStore();
 
   const handleStart = async () => {
     setLoading(true);
     setError(null);
     try {
-      setLoadingText('Requesting Camera...');
-      const videoElement = await CameraManager.getInstance().start();
-      videoRef.current = videoElement;
-      
-      setLoadingText('Loading AI Models...');
-      const tracker = FaceTracker.getInstance();
-      await tracker.initialize();
-      tracker.start(videoElement);
-
+      // Jeeliz starts its own camera loop when JeelizVTO mounts
       setStarted(true);
     } catch (err: any) {
       setError(err.message || 'Failed to start AR experience');
@@ -41,13 +29,8 @@ function App() {
 
   return (
     <div className="vto-app">
-      {/* Video Background Layer */}
-      <div id="video-container" className={started ? 'active' : ''}>
-        {/* The video element is managed by CameraManager but we can reference it */}
-      </div>
-
-      {/* Canvas Overlay Layer */}
-      {started && videoRef.current && <VTOOverlay video={videoRef.current} />}
+      {/* Video Background & 3D Layer (Handled by Jeeliz) */}
+      {started && <JeelizVTO />}
 
       {/* UI Layer */}
       <div className="ui-layer">
@@ -55,7 +38,7 @@ function App() {
           <div className="welcome-screen">
             <div className="glass-card">
               <h1 className="title">Virtual Try-On</h1>
-              <p className="subtitle">Discover your perfect look with our AI-powered eyewear simulator.</p>
+              <p className="subtitle">Discover your perfect look with our specialized AR widget.</p>
               <button className="btn-primary" onClick={handleStart}>
                 <Camera size={20} />
                 <span>Start Experience</span>
@@ -64,10 +47,11 @@ function App() {
           </div>
         )}
 
+
         {loading && (
           <div className="loading-screen">
             <RefreshCw className="spinner" size={48} />
-            <p>{loadingText}</p>
+            <p>Initializing AR Engine...</p>
           </div>
         )}
 
@@ -82,20 +66,14 @@ function App() {
           <>
             <div className="top-controls">
               <button 
-                className={`btn-icon ${showDots ? 'active' : ''}`} 
-                onClick={() => setShowDots(!showDots)}
-                title="Toggle Landmarks"
+                className={`btn-icon ${isAdjustMode ? 'active' : ''}`} 
+                onClick={() => setAdjustMode(!isAdjustMode)}
+                title={isAdjustMode ? "Save Adjustment" : "Adjust Glasses"}
               >
-                {showDots ? <Eye size={20} /> : <EyeOff size={20} />}
-              </button>
-              <button 
-                className={`btn-icon ${showGlasses ? 'active' : ''}`} 
-                onClick={() => setShowGlasses(!showGlasses)}
-                title="Toggle Glasses"
-              >
-                <LayoutGrid size={20} />
+                {isAdjustMode ? <Check size={20} /> : <Settings size={20} />}
               </button>
             </div>
+
 
             <div className="bottom-shelf">
               <div className="glasses-grid">

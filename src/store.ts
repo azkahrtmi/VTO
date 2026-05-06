@@ -4,23 +4,28 @@ interface AppState {
   showDots: boolean;
   showGlasses: boolean;
   selectedGlassesId: string;
+  isAdjustMode: boolean;
   userScale: number;
+
   setShowDots: (val: boolean) => void;
   setShowGlasses: (val: boolean) => void;
   setSelectedGlassesId: (id: string) => void;
   setUserScale: (scale: number) => void;
+  setAdjustMode: (val: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
   showDots: true,
   showGlasses: true,
-  selectedGlassesId: 'retro-round',
+  selectedGlassesId: 'aviator',
+  isAdjustMode: false,
 
   userScale: 1.0,
   setShowDots: (val) => set({ showDots: val }),
   setShowGlasses: (val) => set({ showGlasses: val }),
   setSelectedGlassesId: (id) => set({ selectedGlassesId: id }),
-  setUserScale: (scale) => set({ userScale: scale }),
+  setUserScale: (val) => set({ userScale: val }),
+  setAdjustMode: (val) => set({ isAdjustMode: val }),
 }));
 
 // Legacy support if needed, but we should move to useAppStore
