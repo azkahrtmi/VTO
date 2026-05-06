@@ -30,8 +30,13 @@ export class CameraManager {
     this.videoElement.srcObject = this.stream;
     this.videoElement.playsInline = true;
     
-    // We don't append to DOM because we'll render it via Three.js
-    // but we need to play it
+    // Add to DOM
+    const container = document.getElementById('video-container');
+    if (container) {
+      container.innerHTML = '';
+      container.appendChild(this.videoElement);
+    }
+    
     await this.videoElement.play();
     return this.videoElement;
   }
@@ -44,6 +49,7 @@ export class CameraManager {
     if (this.videoElement) {
       this.videoElement.pause();
       this.videoElement.srcObject = null;
+      this.videoElement.remove();
       this.videoElement = null;
     }
   }

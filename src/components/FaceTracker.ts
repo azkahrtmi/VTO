@@ -1,6 +1,5 @@
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import type { FaceLandmarkerResult } from '@mediapipe/tasks-vision';
-import * as THREE from 'three';
 
 export class FaceTracker {
   private static instance: FaceTracker;
@@ -9,9 +8,7 @@ export class FaceTracker {
   private videoElement: HTMLVideoElement | null = null;
   private lastVideoTime = -1;
   
-  // Public state for Three.js to consume
   public currentResult: FaceLandmarkerResult | null = null;
-  public transformMatrix = new THREE.Matrix4();
   public isFaceDetected = false;
 
   private constructor() {}
@@ -36,7 +33,7 @@ export class FaceTracker {
         delegate: 'GPU'
       },
       outputFaceBlendshapes: false,
-      outputFacialTransformationMatrixes: true,
+      outputFacialTransformationMatrixes: false, // Not needed for Canvas 2D IPD approach
       runningMode: 'VIDEO',
       numFaces: 1
     });
@@ -58,21 +55,12 @@ export class FaceTracker {
   private processFrame = () => {
     if (!this.isRunning || !this.videoElement || !this.faceLandmarker) return;
 
-    // Only process if video has a new frame
     let startTimeMs = performance.now();
     if (this.videoElement.currentTime !== this.lastVideoTime) {
       this.lastVideoTime = this.videoElement.currentTime;
       const result = this.faceLandmarker.detectForVideo(this.videoElement, startTimeMs);
       this.currentResult = result;
-
-      if (result.facialTransformationMatrixes && result.facialTransformationMatrixes.length > 0) {
-        this.isFaceDetected = true;
-        // MediaPipe returns a 4x4 matrix (16 flat array, column-major)
-        const mpMatrix = result.facialTransformationMatrixes[0].data;
-        this.transformMatrix.fromArray(mpMatrix);
-      } else {
-        this.isFaceDetected = false;
-      }
+      this.isFaceDetected = (result.faceLandmarks && result.faceLandmarks.length > 0);
     }
 
     requestAnimationFrame(this.processFrame);

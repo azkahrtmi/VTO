@@ -1,24 +1,31 @@
-type Style = 'classic' | 'round' | 'visor' | 'custom';
+import { create } from 'zustand';
 
-class Store {
-  private style: Style = 'classic';
-  private listeners: Set<(style: Style) => void> = new Set();
-
-  getStyle() {
-    return this.style;
-  }
-
-  setStyle(style: Style) {
-    this.style = style;
-    this.listeners.forEach((l) => l(style));
-  }
-
-  subscribe(listener: (style: Style) => void) {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  }
+interface AppState {
+  showDots: boolean;
+  showGlasses: boolean;
+  selectedGlassesId: string;
+  userScale: number;
+  setShowDots: (val: boolean) => void;
+  setShowGlasses: (val: boolean) => void;
+  setSelectedGlassesId: (id: string) => void;
+  setUserScale: (scale: number) => void;
 }
 
-export const appStore = new Store();
+export const useAppStore = create<AppState>((set) => ({
+  showDots: true,
+  showGlasses: true,
+  selectedGlassesId: 'retro-round',
+
+  userScale: 1.0,
+  setShowDots: (val) => set({ showDots: val }),
+  setShowGlasses: (val) => set({ showGlasses: val }),
+  setSelectedGlassesId: (id) => set({ selectedGlassesId: id }),
+  setUserScale: (scale) => set({ userScale: scale }),
+}));
+
+// Legacy support if needed, but we should move to useAppStore
+export const appStore = {
+  getState: () => useAppStore.getState(),
+  subscribe: (fn: (state: any) => void) => useAppStore.subscribe(fn),
+  updateState: (updates: Partial<AppState>) => useAppStore.setState(updates),
+};
