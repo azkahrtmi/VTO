@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useRef, useState } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { FaceTracker } from './FaceTracker';
 import { CustomGlasses } from './CustomGlasses';
@@ -64,7 +64,7 @@ export function GlassesOverlay() {
     scale: new OneEuroFilter(60, 0.3, 0.001),
   });
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const tracker = FaceTracker.getInstance();
     
     if (tracker.isFaceDetected && tracker.currentResult?.faceLandmarks[0] && groupRef.current) {

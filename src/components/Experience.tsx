@@ -1,5 +1,5 @@
-import React, { useEffect, useState, Suspense } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useState, Suspense } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { Environment, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { CameraManager } from './CameraManager';

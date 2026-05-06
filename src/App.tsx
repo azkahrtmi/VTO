@@ -1,20 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { Camera } from 'lucide-react';
 import { Experience } from './components/Experience';
 import { FaceTracker } from './components/FaceTracker';
 import { CameraManager } from './components/CameraManager';
-import { appStore } from './store';
 
 function App() {
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [style, setStyle] = useState(appStore.getStyle());
-
-  useEffect(() => {
-    return appStore.subscribe(setStyle);
-  }, []);
 
   const handleStart = async () => {
     setLoading(true);

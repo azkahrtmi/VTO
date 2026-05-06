@@ -1,73 +1,112 @@
-# React + TypeScript + Vite
+# VTO Eyewear
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web-based virtual try-on kacamata menggunakan React, TypeScript, MediaPipe Face Landmarker, dan Three.js. Aplikasi ini membuka kamera depan, melacak wajah secara real-time, lalu menempelkan model kacamata `.glb` ke wajah pengguna.
 
-Currently, two official plugins are available:
+## Fitur Saat Ini
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Real-time face tracking dengan `@mediapipe/tasks-vision`
+- Render 3D overlay memakai `@react-three/fiber` dan `three`
+- Background video webcam langsung di dalam canvas Three.js
+- Mirror mode untuk pengalaman seperti bercermin
+- Multi-landmark anchor pada area hidung dan inner eye
+- Dynamic scaling berdasarkan jarak antar mata
+- Motion smoothing dengan `OneEuroFilter`
+- Nose occlusion sederhana agar frame terlihat lebih natural
+- Tuning manual untuk posisi, rotasi, dan ukuran model
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite
+- Three.js
+- `@react-three/fiber`
+- `@react-three/drei`
+- MediaPipe Tasks Vision
 
-## Expanding the ESLint configuration
+## Cara Menjalankan
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Pastikan Node.js sudah terpasang, lalu jalankan:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Build production:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+Preview hasil build:
+
+```bash
+npm run preview
+```
+
+## Cara Kerja Singkat
+
+1. `CameraManager` meminta akses webcam dan menyiapkan elemen video.
+2. `FaceTracker` menginisialisasi MediaPipe Face Landmarker dan memproses frame video.
+3. `Experience` merender feed kamera sebagai background pada canvas Three.js.
+4. `GlassesOverlay` membaca landmark dan transform wajah untuk memosisikan model kacamata.
+5. `OneEuroFilter` menstabilkan posisi, rotasi, dan skala agar overlay tidak terlalu jitter.
+
+## Struktur File Penting
+
+- [src/App.tsx](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/src/App.tsx): flow start experience, loading state, dan error state
+- [src/components/CameraManager.ts](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/src/components/CameraManager.ts): akses dan lifecycle webcam
+- [src/components/FaceTracker.ts](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/src/components/FaceTracker.ts): inisialisasi dan loop deteksi MediaPipe
+- [src/components/Experience.tsx](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/src/components/Experience.tsx): canvas Three.js, lighting, background video, dan overlay
+- [src/components/GlassesOverlay.tsx](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/src/components/GlassesOverlay.tsx): logika anchor, scale, rotasi, smoothing, dan occlusion
+- [src/components/CustomGlasses.tsx](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/src/components/CustomGlasses.tsx): load model `.glb` dan normalisasi bounding box
+- [src/utils/OneEuroFilter.ts](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/src/utils/OneEuroFilter.ts): filter untuk mengurangi jitter
+- [public/face_landmarker.task](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/public/face_landmarker.task): model MediaPipe lokal
+- [public/glasses_converted.glb](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/public/glasses_converted.glb): model kacamata aktif
+- [vto_wiki.md](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/vto_wiki.md): catatan teknis, roadmap, dan referensi implementasi
+
+## Asset yang Dipakai
+
+- File model wajah MediaPipe dibaca dari `public/face_landmarker.task`
+- Runtime WASM MediaPipe di-load dari CDN `jsdelivr`
+- Model kacamata default saat ini adalah `public/glasses_converted.glb`
+
+Jika ingin mengganti model, titik awal yang paling relevan adalah:
+
+- ganti path model di `CustomGlasses`
+- sesuaikan normalisasi bounding box jika proporsi model berbeda
+- tune offset di `TWEAK_CONFIG` pada `GlassesOverlay`
+
+## Area Tuning Utama
+
+Penyesuaian manual paling penting ada di [src/components/GlassesOverlay.tsx](C:/Users/le/Documents/Arus%20Digital/project/JS/VTO/src/components/GlassesOverlay.tsx):
+
+- `geserVertikal`
+- `geserMajuMundur`
+- `pengaliUkuran`
+- `balikRotasiKiriKanan`
+- `balikModelDepanBelakang`
+- `tampilkanTitikJangkar`
+
+Bagian ini dipakai untuk fine-tuning posisi kacamata terhadap hasil tracking AI.
+
+## Catatan Implementasi
+
+- `README` ini mengikuti status implementasi repo saat ini, bukan roadmap penuh production.
+- UI selector multi-model belum aktif meskipun `store.ts` masih menyimpan state `style`.
+- Proyek ini lebih dekat ke MVP single-model daripada sistem marketplace multi-SKU.
+- Browser akan meminta izin kamera saat experience dimulai.
+
+## Pengembangan Lanjutan
+
+Beberapa area yang masuk akal untuk tahap berikutnya:
+
+- multi-SKU model selector
+- metadata offset per model
+- lazy loading dan preload asset
+- responsive mobile layout
+- fallback saat kamera tidak tersedia
+- screenshot atau share result
+
+

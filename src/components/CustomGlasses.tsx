@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 
@@ -6,7 +6,12 @@ export const CustomGlasses = () => {
   const { scene } = useGLTF('/glasses_converted.glb');
   
   const { scale, position } = useMemo(() => {
-    if (!scene) return { scale: [1, 1, 1], position: [0, 0, 0] };
+    if (!scene) {
+      return {
+        scale: [1, 1, 1] as [number, number, number],
+        position: [0, 0, 0] as [number, number, number],
+      };
+    }
     
     // Hitung kotak pembatas (bounding box) dari model 3D
     const box = new THREE.Box3().setFromObject(scene);
