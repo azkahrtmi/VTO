@@ -17,7 +17,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   showDots: true,
   showGlasses: true,
-  selectedGlassesId: 'aviator',
+  selectedGlassesId: 'aviator-gold',
   isAdjustMode: false,
 
   userScale: 1.0,

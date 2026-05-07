@@ -43,7 +43,6 @@ function App() {
           <LandingPage onStartTryOn={handleStart} />
         )}
 
-
         {loading && (
           <div className="loading-screen">
             <RefreshCw className="spinner" size={48} />
@@ -69,7 +68,6 @@ function App() {
                 {isAdjustMode ? <Check size={20} /> : <Settings size={20} />}
               </button>
             </div>
-
 
             <div className="bottom-shelf">
               <div className="glasses-grid">
