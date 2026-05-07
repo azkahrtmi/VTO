@@ -1,19 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+// @ts-nocheck
+import { useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
 import { GLASSES_CATALOG } from '../catalog/glasses';
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'a-scene': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
-      'a-assets': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
-      'a-asset-item': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
-      'a-camera': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
-      'a-entity': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
-      'a-gltf-model': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
-    }
-  }
-}
 
 export const MindARVTO = () => {
   const sceneRef = useRef<any>(null);

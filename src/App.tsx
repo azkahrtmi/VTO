@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Camera, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { MindARVTO } from './components/MindARVTO';
 import { LandingPage } from './components/landing/LandingPage';
 import { useAppStore } from './store';
