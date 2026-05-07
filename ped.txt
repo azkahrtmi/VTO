@@ -1,0 +1,683 @@
+const {
+  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+  HeadingLevel, AlignmentType, BorderStyle, WidthType, ShadingType,
+  LevelFormat, PageNumber, Header, Footer
+} = require('docx');
+const fs = require('fs');
+
+const B  = { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' };
+const BS = { top: B, bottom: B, left: B, right: B };
+const NB = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+const NBS= { top: NB, bottom: NB, left: NB, right: NB };
+
+const cellM = { top: 100, bottom: 100, left: 140, right: 140 };
+
+function p(text, opts={}) {
+  return new Paragraph({ spacing:{before:60,after:80}, children:[new TextRun({text, font:'Courier New', size:20, ...opts})] });
+}
+function body(text, opts={}) {
+  return new Paragraph({ spacing:{before:60,after:80}, children:[new TextRun({text, font:'Arial', size:22, ...opts})] });
+}
+function h1(text) {
+  return new Paragraph({ heading:HeadingLevel.HEADING_1, spacing:{before:400,after:140},
+    children:[new TextRun({text, bold:true, font:'Arial', size:40, color:'1A1A2E'})] });
+}
+function h2(text) {
+  return new Paragraph({ spacing:{before:280,after:100},
+    children:[new TextRun({text, bold:true, font:'Arial', size:28, color:'0F3460'})] });
+}
+function h3(text) {
+  return new Paragraph({ spacing:{before:200,after:80},
+    children:[new TextRun({text, bold:true, font:'Arial', size:24, color:'16213E'})] });
+}
+function warn(text) {
+  return new Paragraph({
+    spacing:{before:80,after:80},
+    shading:{ fill:'FFF3CD', type:ShadingType.CLEAR },
+    indent:{ left:200 },
+    children:[new TextRun({text:'⚠ '+text, font:'Arial', size:22, color:'856404'})]
+  });
+}
+function ok(text) {
+  return new Paragraph({
+    spacing:{before:60,after:60},
+    shading:{ fill:'D4EDDA', type:ShadingType.CLEAR },
+    indent:{ left:200 },
+    children:[new TextRun({text:'✓ '+text, font:'Arial', size:22, color:'155724'})]
+  });
+}
+function err(text) {
+  return new Paragraph({
+    spacing:{before:60,after:60},
+    shading:{ fill:'F8D7DA', type:ShadingType.CLEAR },
+    indent:{ left:200 },
+    children:[new TextRun({text:'✗ '+text, font:'Arial', size:22, color:'721C24'})]
+  });
+}
+function bullet(text) {
+  return new Paragraph({
+    numbering:{reference:'bullets',level:0}, spacing:{before:40,after:40},
+    children:[new TextRun({text, font:'Arial', size:22})]
+  });
+}
+function sep() {
+  return new Paragraph({
+    spacing:{before:200,after:200},
+    border:{ bottom:{ style:BorderStyle.SINGLE, size:6, color:'DDDDDD' } },
+    children:[]
+  });
+}
+function code(lines) {
+  return lines.map(line => new Paragraph({
+    spacing:{before:0,after:0},
+    shading:{ fill:'1E1E1E', type:ShadingType.CLEAR },
+    indent:{ left:360 },
+    children:[new TextRun({text:line, font:'Courier New', size:18, color:'D4D4D4'})]
+  }));
+}
+function row2(a, b, headerRow=false) {
+  const shade = headerRow ? { fill:'1A1A2E', type:ShadingType.CLEAR } : { fill:'F8F8F8', type:ShadingType.CLEAR };
+  const color = headerRow ? 'FFFFFF' : '111111';
+  const labelColor = headerRow ? 'FFFFFF' : '333333';
+  return new TableRow({ children:[
+    new TableCell({ borders:BS, width:{size:3000,type:WidthType.DXA}, shading:shade, margins:cellM,
+      children:[new Paragraph({children:[new TextRun({text:a,font:'Arial',size:20,bold:true,color:labelColor})]})] }),
+    new TableCell({ borders:BS, width:{size:6360,type:WidthType.DXA}, shading:headerRow?shade:{fill:'FFFFFF',type:ShadingType.CLEAR}, margins:cellM,
+      children:[new Paragraph({children:[new TextRun({text:b,font:'Arial',size:20,color})]})] }),
+  ]});
+}
+function table2(rows) {
+  return new Table({ width:{size:9360,type:WidthType.DXA}, columnWidths:[3000,6360], rows });
+}
+
+const doc = new Document({
+  numbering: { config:[
+    { reference:'bullets', levels:[{level:0,format:LevelFormat.BULLET,text:'•',alignment:AlignmentType.LEFT,
+      style:{paragraph:{indent:{left:720,hanging:360}}}}] },
+    { reference:'numbers', levels:[{level:0,format:LevelFormat.DECIMAL,text:'%1.',alignment:AlignmentType.LEFT,
+      style:{paragraph:{indent:{left:720,hanging:360}}}}] },
+  ]},
+  styles: {
+    default:{ document:{ run:{ font:'Arial', size:22 } } },
+  },
+  sections:[{
+    properties:{ page:{ size:{width:12240,height:15840}, margin:{top:1440,right:1440,bottom:1440,left:1440} } },
+    headers:{ default: new Header({ children:[
+      new Paragraph({ alignment:AlignmentType.RIGHT,
+        border:{ bottom:{style:BorderStyle.SINGLE,size:4,color:'CCCCCC'} },
+        spacing:{after:120},
+        children:[new TextRun({text:'VTO 3D GLB — Precision Brief untuk AI Agent', font:'Arial', size:18, color:'888888'})]
+      })
+    ]})},
+    footers:{ default: new Footer({ children:[
+      new Paragraph({ alignment:AlignmentType.CENTER,
+        border:{ top:{style:BorderStyle.SINGLE,size:4,color:'CCCCCC'} },
+        spacing:{before:120},
+        children:[
+          new TextRun({text:'Halaman ', font:'Arial', size:18, color:'888888'}),
+          new TextRun({children:[PageNumber.CURRENT], font:'Arial', size:18, color:'888888'}),
+          new TextRun({text:' dari ', font:'Arial', size:18, color:'888888'}),
+          new TextRun({children:[PageNumber.TOTAL_PAGES], font:'Arial', size:18, color:'888888'}),
+        ]
+      })
+    ]})},
+    children:[
+
+      // COVER
+      new Paragraph({ alignment:AlignmentType.CENTER, spacing:{before:800,after:200},
+        children:[new TextRun({text:'VTO Kacamata 3D — Instruksi Presisi', font:'Arial', size:60, bold:true, color:'1A1A2E'})] }),
+      new Paragraph({ alignment:AlignmentType.CENTER, spacing:{before:0,after:120},
+        children:[new TextRun({text:'Implementasi Three.js + MediaPipe + GLB Model', font:'Arial', size:28, color:'0F3460'})] }),
+      new Paragraph({ alignment:AlignmentType.CENTER, spacing:{before:0,after:800},
+        children:[new TextRun({text:'Dokumen ini berisi data nyata dari analisis kedua file GLB yang diberikan user', font:'Arial', size:22, color:'888888', italics:true})] }),
+
+      sep(),
+
+      // ═══════════════════════════════════════════════
+      h1('1. Analisis File GLB — Hasil Inspeksi Nyata'),
+      // ═══════════════════════════════════════════════
+
+      body('Dua file GLB telah dianalisis secara programatik. Berikut adalah fakta teknis yang harus digunakan agent, bukan asumsi.'),
+
+      new Paragraph({spacing:{before:120,after:0},children:[]}),
+      h2('1.1  demo_vto_round_glasses.glb  ✓  GUNAKAN FILE INI'),
+      ok('File ini SIAP PAKAI. Struktur mesh bersih, koordinat terpusat, ada node helper anchor.'),
+
+      new Paragraph({spacing:{before:100,after:80},children:[]}),
+      table2([
+        row2('Property', 'Nilai', true),
+        row2('Ukuran file', '200 KB — ringan, cocok untuk web'),
+        row2('Jumlah mesh', '12 mesh terpisah per komponen'),
+        row2('Jumlah material', '5 material (frame, lensa, engsel, nose pad, helper)'),
+        row2('Texture', '1 texture'),
+        row2('Animasi', 'Tidak ada — static model'),
+        row2('Sistem koordinat', 'Terpusat di titik 0,0,0 — bridge_center ada di origin'),
+      ]),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h3('Daftar Node/Mesh — Nama Persis untuk three.js getObjectByName()'),
+      new Paragraph({spacing:{before:80,after:0},children:[]}),
+
+      table2([
+        row2('Nama Node', 'Fungsi & Bounding Box', true),
+        row2('world', 'Root node, parent semua komponen'),
+        row2('frame_body', 'Badan utama frame  |  X[-62~62]  Y[-39~15]  Z[-1~1]'),
+        row2('left_lens', 'Lensa kiri  |  X[-59.5~-10.5]  Y[-36.5~12.5]  Z[-0.6~0.6]'),
+        row2('right_lens', 'Lensa kanan  |  X[10.5~59.5]  Y[-36.5~12.5]  Z[-0.6~0.6]'),
+        row2('left_temple', 'Gagang kiri  |  X[-73.9~-60.1]  Z[-144.6~0.3]  — memanjang ke belakang'),
+        row2('right_temple', 'Gagang kanan  |  X[60.1~73.9]  Z[-144.6~0.3]  — memanjang ke belakang'),
+        row2('hinges', 'Engsel  |  X[-66.7~66.7]  Y[-13~-9]'),
+        row2('nose_pads', 'Bantalan hidung  |  X[-9.2~9.2]  Y[-16.9~-7.1]  Z[3.8~6.2]'),
+        row2('bridge_center', '★ ANCHOR UTAMA  |  Center ≈ (0, 0, 0)  — titik origin kacamata'),
+        row2('left_lens_center', 'Center lensa kiri  |  X≈-35  Y≈-12'),
+        row2('right_lens_center', 'Center lensa kanan  |  X≈35  Y≈-12'),
+        row2('left_hinge', 'Center engsel kiri  |  X≈-63.5'),
+        row2('right_hinge', 'Center engsel kanan  |  X≈63.5'),
+      ]),
+
+      new Paragraph({spacing:{before:120,after:0},children:[]}),
+      h3('Material yang Ada di File'),
+      new Paragraph({spacing:{before:80,after:0},children:[]}),
+      table2([
+        row2('Nama Material', 'baseColor (RGBA) — gunakan persis ini', true),
+        row2('matframe_silver', 'rgba(0.78, 0.76, 0.72, 1.0)  →  hex #C7C2B8'),
+        row2('matlens_gradient_reflective', 'rgba(1.0, 1.0, 1.0, 0.698)  →  semi-transparan'),
+        row2('mat_hinge_metal', 'rgba(0.62, 0.62, 0.62, 1.0)  →  hex #9E9E9E'),
+        row2('mat_nosepad_clear', 'rgba(0.92, 0.96, 1.0, 0.42)  →  clear/bening'),
+        row2('mat_helper_hidden', 'rgba(1.0, 0.0, 0.0, 0.0)  →  ALPHA=0, jangan dirender / hide node ini'),
+      ]),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('1.2  glasses_converted.glb  ✗  JANGAN GUNAKAN LANGSUNG'),
+      err('File ini TIDAK SIAP PAKAI. Koordinat berantakan — harus di-fix dulu sebelum dipakai.'),
+
+      new Paragraph({spacing:{before:100,after:80},children:[]}),
+      table2([
+        row2('Property', 'Nilai & Masalah', true),
+        row2('Ukuran file', '30 MB — besar karena multiple textures 10 buah'),
+        row2('Jumlah mesh', '15 mesh'),
+        row2('MASALAH KRITIS', 'Bounding box total: X[-1858~0.5] — lebar 1859 unit, tidak ternormalisasi'),
+        row2('MASALAH KRITIS', 'Center model: (-929, -188) — jauh dari origin, akan invisible di Three.js'),
+        row2('Node[3] offset', 'translation X=13.88 — model tidak di-center saat export dari Maya/Blender'),
+        row2('Mesh[3]', 'pCylinder6 X[-673~-671] — satu komponen terpisah 600+ unit dari yang lain'),
+        row2('Mesh[9,10,11]', 'Koordinat ratusan hingga ribuan unit — model di-duplicate tanpa reset transform'),
+        row2('Material', 'Hanya 3 material tapi 10 texture — overhead tidak perlu'),
+      ]),
+
+      warn('Jika tetap ingin pakai glasses_converted.glb, lakukan normalisasi dulu: hitung bounding box total, shift semua vertex agar center di (0,0,0), lalu scale agar total width ≈ 120 unit (setara demo_vto_round_glasses.glb).'),
+
+      sep(),
+
+      // ═══════════════════════════════════════════════
+      h1('2. Arsitektur Implementasi 3D VTO'),
+      // ═══════════════════════════════════════════════
+
+      body('Gunakan stack berikut ini. Jangan ganti library tanpa alasan spesifik karena sudah dipilih berdasarkan kompatibilitas dan performa.'),
+
+      new Paragraph({spacing:{before:100,after:80},children:[]}),
+      table2([
+        row2('Layer', 'Library & Versi', true),
+        row2('Face Detection', '@mediapipe/face_mesh  +  @mediapipe/camera_utils'),
+        row2('3D Renderer', 'three  ^0.160.0  (atau latest r160+)'),
+        row2('GLB Loader', 'three/examples/jsm/loaders/GLTFLoader'),
+        row2('Framework', 'React + TypeScript + Vite (sesuai repo existing)'),
+        row2('Kamera', 'getUserMedia({ video: { facingMode: "user", width:640, height:480 } })'),
+      ]),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('2.1  Setup Three.js Scene untuk VTO'),
+
+      body('Scene Three.js harus di-overlay di atas elemen video menggunakan CSS absolute positioning. Canvas Three.js TIDAK menggantikan video — keduanya ditampilkan bersamaan dengan Three.js di atas.'),
+      new Paragraph({spacing:{before:80,after:0},children:[]}),
+
+      ...code([
+        '// VTOScene.ts',
+        'import * as THREE from "three";',
+        '',
+        'export function initScene(container: HTMLDivElement, w: number, h: number) {',
+        '  const renderer = new THREE.WebGLRenderer({',
+        '    alpha: true,          // WAJIB: background transparan agar video terlihat',
+        '    antialias: true,',
+        '    premultipliedAlpha: false,',
+        '  });',
+        '  renderer.setSize(w, h);',
+        '  renderer.setPixelRatio(window.devicePixelRatio);',
+        '  renderer.setClearColor(0x000000, 0); // alpha=0, fully transparent',
+        '',
+        '  // Canvas Three.js overlap di atas video',
+        '  renderer.domElement.style.position = "absolute";',
+        '  renderer.domElement.style.top = "0";',
+        '  renderer.domElement.style.left = "0";',
+        '  renderer.domElement.style.pointerEvents = "none"; // klik tembus ke video',
+        '  container.appendChild(renderer.domElement);',
+        '',
+        '  // Kamera Three.js — pakai PerspectiveCamera dengan FOV yang match video',
+        '  const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);',
+        '  camera.position.set(0, 0, 500); // jauh dari origin',
+        '',
+        '  const scene = new THREE.Scene();',
+        '',
+        '  // Lighting — wajib ada agar material kacamata terlihat',
+        '  const ambient = new THREE.AmbientLight(0xffffff, 0.8);',
+        '  const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);',
+        '  dirLight.position.set(0, 10, 10);',
+        '  scene.add(ambient, dirLight);',
+        '',
+        '  return { renderer, camera, scene };',
+        '}',
+      ]),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('2.2  Load GLB Model — Kode Presisi'),
+
+      warn('File GLB harus diletakkan di folder /public/ agar bisa diakses oleh URL. Jangan import GLB sebagai module.'),
+      new Paragraph({spacing:{before:80,after:0},children:[]}),
+
+      ...code([
+        '// GLBLoader.ts',
+        'import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";',
+        'import * as THREE from "three";',
+        '',
+        'export async function loadGlasses(scene: THREE.Scene): Promise<THREE.Group> {',
+        '  return new Promise((resolve, reject) => {',
+        '    const loader = new GLTFLoader();',
+        '    // Letakkan file di: /public/demo_vto_round_glasses.glb',
+        '    loader.load(',
+        '      "/demo_vto_round_glasses.glb",',
+        '      (gltf) => {',
+        '        const model = gltf.scene;',
+        '',
+        '        // STEP 1: Sembunyikan helper node (alpha=0 di material aslinya)',
+        '        const helperNames = [',
+        '          "bridge_center", "left_lens_center", "right_lens_center",',
+        '          "left_hinge", "right_hinge"',
+        '        ];',
+        '        helperNames.forEach(name => {',
+        '          const node = model.getObjectByName(name);',
+        '          if (node) node.visible = false;',
+        '        });',
+        '',
+        '        // STEP 2: Material lensa — set transparent + depthWrite false',
+        '        model.traverse((child) => {',
+        '          if (child instanceof THREE.Mesh) {',
+        '            if (child.name === "left_lens" || child.name === "right_lens") {',
+        '              const mat = child.material as THREE.MeshStandardMaterial;',
+        '              mat.transparent = true;',
+        '              mat.opacity = 0.3;',
+        '              mat.depthWrite = false; // lensa tidak block objek di belakangnya',
+        '              mat.side = THREE.DoubleSide;',
+        '            }',
+        '          }',
+        '        });',
+        '',
+        '        scene.add(model);',
+        '        resolve(model);',
+        '      },',
+        '      undefined,',
+        '      reject',
+        '    );',
+        '  });',
+        '}',
+      ]),
+
+      sep(),
+
+      // ═══════════════════════════════════════════════
+      h1('3. Mapping MediaPipe → Three.js — Algoritma Presisi'),
+      // ═══════════════════════════════════════════════
+
+      body('Ini adalah bagian PALING KRITIS. Kesalahan di sini menyebabkan kacamata tidak tepat di wajah. Ikuti formula ini persis.'),
+
+      new Paragraph({spacing:{before:100,after:80},children:[]}),
+      h2('3.1  Landmark Index yang Wajib Digunakan'),
+
+      new Paragraph({spacing:{before:80,after:80},children:[]}),
+      table2([
+        row2('Landmark Index', 'Nama & Penggunaan', true),
+        row2('#6', '★ NOSE BRIDGE (glabella) — ANCHOR UTAMA posisi kacamata'),
+        row2('#33', 'LEFT PUPIL CENTER — untuk hitung IPD dan angle rotasi'),
+        row2('#263', 'RIGHT PUPIL CENTER — untuk hitung IPD dan angle rotasi'),
+        row2('#234', 'LEFT TEMPLE — referensi titik ujung gagang kiri'),
+        row2('#454', 'RIGHT TEMPLE — referensi titik ujung gagang kanan'),
+        row2('#1', 'NOSE TIP — opsional, untuk depth estimation Z-axis'),
+        row2('#10', 'FOREHEAD TOP — opsional, validasi orientasi wajah'),
+      ]),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('3.2  Konversi Koordinat MediaPipe → Three.js World Space'),
+
+      body('MediaPipe menghasilkan koordinat normalized [0..1]. Harus dikonversi ke pixel dulu, lalu ke Three.js world space.'),
+      new Paragraph({spacing:{before:80,after:0},children:[]}),
+
+      ...code([
+        '// coordinateMapper.ts',
+        '',
+        '// MediaPipe landmark: { x: 0..1, y: 0..1, z: -1..0 (relatif) }',
+        '// Three.js world: tergantung posisi camera dan FOV',
+        '',
+        'export function mediapipeToThreeJS(',
+        '  landmark: {x:number, y:number, z:number},',
+        '  videoWidth: number,',
+        '  videoHeight: number,',
+        '  camera: THREE.PerspectiveCamera',
+        '): THREE.Vector3 {',
+        '',
+        '  // Step 1: Normalized → Pixel (ingat: video di-mirror, jadi flip X)',
+        '  // Video element pakai CSS transform: scaleX(-1) untuk selfie mode',
+        '  // MediaPipe sudah handle mirror jika SelfieMode = true',
+        '  const pixelX = landmark.x * videoWidth;',
+        '  const pixelY = landmark.y * videoHeight;',
+        '',
+        '  // Step 2: Pixel → NDC (Normalized Device Coordinates) [-1 .. 1]',
+        '  const ndcX = (pixelX / videoWidth) * 2 - 1;',
+        '  const ndcY = -(pixelY / videoHeight) * 2 + 1; // Y dibalik di WebGL',
+        '',
+        '  // Step 3: NDC → Three.js world space',
+        '  // Unproject dari kamera pada Z=0 (plane yang sejajar layar)',
+        '  const vector = new THREE.Vector3(ndcX, ndcY, 0.5);',
+        '  vector.unproject(camera);',
+        '',
+        '  // Step 4: Arahkan ray dari camera ke vector, intersect Z=0 plane',
+        '  const dir = vector.sub(camera.position).normalize();',
+        '  const distance = -camera.position.z / dir.z;',
+        '  const worldPos = camera.position.clone().add(dir.multiplyScalar(distance));',
+        '',
+        '  return worldPos;',
+        '}',
+      ]),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('3.3  Posisi, Skala, dan Rotasi Model — Formula Lengkap'),
+
+      warn('Skala model harus dihitung dari IPD (Inter-Pupillary Distance) secara real-time, BUKAN nilai konstan. Nilai konstan menyebabkan kacamata terlalu besar/kecil saat wajah dekat/jauh.'),
+      new Paragraph({spacing:{before:80,after:0},children:[]}),
+
+      ...code([
+        '// VTOEngine.ts — fungsi utama yang dipanggil setiap frame',
+        '',
+        'const GLASSES_MODEL_WIDTH = 124; // unit — dari data nyata: frame_body X[-62~62]',
+        '// IPD real manusia rata-rata: 6.3 cm ≈ 63% dari lebar frame kacamata ukuran medium',
+        '// Faktor scaling: glassWidth = eyeDist_pixel × SCALE_FACTOR',
+        'const SCALE_FACTOR = 2.6; // empiris: IPD × 2.6 = lebar frame kacamata',
+        '',
+        'export function updateGlassesTransform(',
+        '  glassesModel: THREE.Group,',
+        '  landmarks: NormalizedLandmarkList,',
+        '  videoW: number,',
+        '  videoH: number,',
+        '  camera: THREE.PerspectiveCamera',
+        ') {',
+        '  const lm = landmarks;',
+        '',
+        '  // ── ANCHOR POINT: Nose Bridge (landmark #6) ──',
+        '  const noseBridge = mediapipeToThreeJS(lm[6], videoW, videoH, camera);',
+        '',
+        '  // ── EYE POSITIONS ──',
+        '  const leftEye  = mediapipeToThreeJS(lm[33],  videoW, videoH, camera);',
+        '  const rightEye = mediapipeToThreeJS(lm[263], videoW, videoH, camera);',
+        '',
+        '  // ── POSISI: tempatkan model di nose bridge ──',
+        '  glassesModel.position.copy(noseBridge);',
+        '',
+        '  // ── SKALA: hitung dari IPD real-time ──',
+        '  const eyeDistPixel = Math.hypot(',
+        '    (lm[263].x - lm[33].x) * videoW,',
+        '    (lm[263].y - lm[33].y) * videoH',
+        '  );',
+        '  // Target lebar kacamata dalam pixel',
+        '  const targetWidthPx = eyeDistPixel * SCALE_FACTOR;',
+        '',
+        '  // Konversi target pixel ke Three.js unit',
+        '  // Gunakan ratio: (videoWidth pixel) / (Three.js world width di Z=noseBridge.z)',
+        '  const leftWorld  = mediapipeToThreeJS(lm[33],  videoW, videoH, camera);',
+        '  const rightWorld = mediapipeToThreeJS(lm[263], videoW, videoH, camera);',
+        '  const eyeDistWorld = leftWorld.distanceTo(rightWorld);',
+        '  const targetWidthWorld = eyeDistWorld * SCALE_FACTOR;',
+        '',
+        '  // Scale model: GLASSES_MODEL_WIDTH unit = targetWidthWorld Three.js unit',
+        '  const scaleFactor = targetWidthWorld / GLASSES_MODEL_WIDTH;',
+        '  glassesModel.scale.setScalar(scaleFactor);',
+        '',
+        '  // ── ROTASI: ikuti kemiringan kepala (roll angle) ──',
+        '  const dx = rightEye.x - leftEye.x;',
+        '  const dy = rightEye.y - leftEye.y;',
+        '  const rollAngle = Math.atan2(dy, dx); // radian',
+        '  glassesModel.rotation.z = rollAngle;',
+        '',
+        '  // ── YAW: estimasi rotasi kiri-kanan kepala ──',
+        '  // Gunakan perbedaan X antara left_temple dan right_temple dari MediaPipe',
+        '  const leftTemple  = mediapipeToThreeJS(lm[234], videoW, videoH, camera);',
+        '  const rightTemple = mediapipeToThreeJS(lm[454], videoW, videoH, camera);',
+        '  const templeDist = rightTemple.x - leftTemple.x;',
+        '  // Normalkan: bila kepala lurus, templeDist ≈ eyeDistWorld * 1.6',
+        '  const expectedTempleDist = eyeDistWorld * 1.6;',
+        '  const yawRatio = templeDist / expectedTempleDist; // 1.0 = lurus',
+        '  const yawAngle = Math.acos(Math.min(Math.max(yawRatio, -1), 1));',
+        '  // Tentukan arah yaw dari posisi relatif mata terhadap temple',
+        '  const yawDir = (leftTemple.x + rightTemple.x) / 2 > noseBridge.x ? 1 : -1;',
+        '  glassesModel.rotation.y = yawDir * (Math.PI / 2 - yawAngle);',
+        '',
+        '  // ── PITCH: estimasi anggukan kepala ──',
+        '  const noseTip = mediapipeToThreeJS(lm[1], videoW, videoH, camera);',
+        '  const pitchDelta = noseTip.y - noseBridge.y;',
+        '  const pitchNorm = pitchDelta / (eyeDistWorld * 0.5);',
+        '  glassesModel.rotation.x = pitchNorm * 0.3; // dampen agar tidak overreact',
+        '}',
+      ]),
+
+      sep(),
+
+      // ═══════════════════════════════════════════════
+      h1('4. Smoothing — Wajib Implementasi'),
+      // ═══════════════════════════════════════════════
+
+      body('Tanpa smoothing, kacamata akan bergetar (jitter) karena noise natural dari MediaPipe. Gunakan Exponential Moving Average (EMA).'),
+      new Paragraph({spacing:{before:80,after:0},children:[]}),
+
+      ...code([
+        '// smoother.ts',
+        '',
+        'class EMAVector3 {',
+        '  private prev: THREE.Vector3 | null = null;',
+        '  private alpha: number;',
+        '',
+        '  constructor(alpha = 0.25) {',
+        '    // alpha: 0.1 = sangat smooth (lambat)  |  0.5 = agak smooth (cepat)',
+        '    // Rekomendasi: 0.25 untuk balance responsif + stabil',
+        '    this.alpha = alpha;',
+        '  }',
+        '',
+        '  update(next: THREE.Vector3): THREE.Vector3 {',
+        '    if (!this.prev) { this.prev = next.clone(); return this.prev; }',
+        '    this.prev.lerp(next, this.alpha);',
+        '    return this.prev.clone();',
+        '  }',
+        '}',
+        '',
+        'class EMAScalar {',
+        '  private prev: number | null = null;',
+        '  private alpha: number;',
+        '',
+        '  constructor(alpha = 0.25) { this.alpha = alpha; }',
+        '',
+        '  update(next: number): number {',
+        '    if (this.prev === null) { this.prev = next; return next; }',
+        '    this.prev = this.prev * (1 - this.alpha) + next * this.alpha;',
+        '    return this.prev;',
+        '  }',
+        '}',
+        '',
+        '// Instansiasi satu kali di komponen VTO, bukan di dalam loop frame',
+        'const posSmooth   = new EMAVector3(0.25);',
+        'const scaleSmooth = new EMAScalar(0.2);',
+        'const rotZSmooth  = new EMAScalar(0.3);',
+        'const rotYSmooth  = new EMAScalar(0.2);',
+        'const rotXSmooth  = new EMAScalar(0.2);',
+        '',
+        '// Di dalam loop frame, SETELAH menghitung raw values:',
+        'glassesModel.position.copy(posSmooth.update(rawPosition));',
+        'const smoothScale = scaleSmooth.update(rawScale);',
+        'glassesModel.scale.setScalar(smoothScale);',
+        'glassesModel.rotation.z = rotZSmooth.update(rawRollAngle);',
+        'glassesModel.rotation.y = rotYSmooth.update(rawYawAngle);',
+        'glassesModel.rotation.x = rotXSmooth.update(rawPitchAngle);',
+      ]),
+
+      sep(),
+
+      // ═══════════════════════════════════════════════
+      h1('5. Solusi Masalah Kacamata 3D'),
+      // ═══════════════════════════════════════════════
+
+      h2('5.1  Gagang Tidak Muncul — 3 Penyebab Spesifik 3D'),
+
+      new Paragraph({spacing:{before:100,after:80},children:[]}),
+      table2([
+        row2('Penyebab', 'Solusi Presisi', true),
+        row2('Camera far plane terlalu kecil',
+          'Set camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 2000). Far=2000 bukan 1000. Gagang Z[-144] dalam model space, setelah scale bisa jauh.'),
+        row2('Backface culling menyembunyikan gagang',
+          'Di GLB ini, temple mesh mungkin normalnya menghadap ke dalam. Tambahkan: child.material.side = THREE.DoubleSide pada mesh left_temple dan right_temple.'),
+        row2('DepthTest konflik lensa dan gagang',
+          'Render order: set glassesModel.renderOrder = 1, lensa (left_lens, right_lens): child.renderOrder = 2, dan depthWrite = false pada material lensa.'),
+        row2('Model di-clip oleh renderer',
+          'Tambahkan renderer.sortObjects = true dan pastikan THREE.WebGLRenderer({ logarithmicDepthBuffer: true }).'),
+      ]),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('5.2  Model Tidak Muncul Sama Sekali'),
+
+      bullet('Cek apakah file .glb ada di /public/ — bukan di /src/'),
+      bullet('Cek network tab di DevTools: apakah request GLB berhasil (status 200)?'),
+      bullet('renderer.domElement.style.pointerEvents = "none" — pastikan ini ada, atau canvas Three.js memblok event kamera'),
+      bullet('Pastikan renderer.setClearColor(0x000000, 0) — alpha harus 0, bukan default'),
+      bullet('Tambahkan console.log saat GLTF onLoad untuk konfirmasi model loaded'),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('5.3  Render Lambat / Drop Frame'),
+
+      bullet('Panggil faceMesh.initialize() saat page load, bukan saat user klik tombol VTO'),
+      bullet('Set canvas size SEKALI di onLoadedMetadata, bukan setiap frame onResults'),
+      bullet('Gunakan renderer.setAnimationLoop() atau requestAnimationFrame — jangan setInterval'),
+      bullet('Nonaktifkan shadow: renderer.shadowMap.enabled = false — tidak perlu untuk VTO'),
+      bullet('Matikan antialias jika performance rendah: new THREE.WebGLRenderer({ antialias: false })'),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('5.4  Kacamata "Melayang" atau Tidak Nempel di Hidung'),
+
+      bullet('Pastikan anchor adalah lm[6] (nose bridge / glabella), BUKAN rata-rata dua mata'),
+      bullet('Cek Y offset: model GLB ini bridge_center ada di Y≈0. Jika kacamata terlalu tinggi, tambahkan offset: glassesModel.position.y -= eyeDistWorld * 0.15'),
+      bullet('Jika video di-mirror (CSS scaleX(-1)), pastikan landmark X juga di-flip: x = 1 - landmark.x'),
+
+      sep(),
+
+      // ═══════════════════════════════════════════════
+      h1('6. Struktur File yang Harus Dibuat Agent'),
+      // ═══════════════════════════════════════════════
+
+      new Paragraph({spacing:{before:80,after:80},children:[]}),
+      table2([
+        row2('File/Folder', 'Isi & Keterangan', true),
+        row2('public/demo_vto_round_glasses.glb', 'Copy file GLB ke sini — wajib di /public/'),
+        row2('src/vto/VTOScene.ts', 'Three.js scene init: renderer, camera, lights'),
+        row2('src/vto/GLBLoader.ts', 'Load GLB, hide helper nodes, setup lens transparency'),
+        row2('src/vto/coordinateMapper.ts', 'mediapipeToThreeJS() conversion function'),
+        row2('src/vto/VTOEngine.ts', 'updateGlassesTransform() — dipanggil tiap frame'),
+        row2('src/vto/smoother.ts', 'EMAVector3 dan EMAScalar class'),
+        row2('src/vto/VTOComponent.tsx', 'React component: video + Three.js canvas overlay'),
+        row2('src/vto/useFaceMesh.ts', 'Custom hook: init MediaPipe, lifecycle, cleanup'),
+      ]),
+
+      new Paragraph({spacing:{before:160,after:0},children:[]}),
+      h2('6.1  Urutan Inisialisasi yang Benar (WAJIB DIIKUTI)'),
+
+      new Paragraph({spacing:{before:80,after:0},children:[]}),
+      ...code([
+        '// Di VTOComponent.tsx — urutan wajib',
+        '',
+        'useEffect(() => {',
+        '  // 1. Init Three.js scene DULU',
+        '  const { renderer, camera, scene } = initScene(containerRef.current, 640, 480);',
+        '',
+        '  // 2. Load GLB model (async)',
+        '  loadGlasses(scene).then(model => {',
+        '    glassesRef.current = model;',
+        '    model.visible = false; // sembunyikan dulu sampai wajah terdeteksi',
+        '  });',
+        '',
+        '  // 3. Init MediaPipe',
+        '  const faceMesh = new FaceMesh({',
+        '    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`',
+        '  });',
+        '  faceMesh.setOptions({',
+        '    maxNumFaces: 1,',
+        '    refineLandmarks: true,',
+        '    minDetectionConfidence: 0.5,',
+        '    minTrackingConfidence: 0.5',
+        '  });',
+        '  faceMesh.onResults(results => {',
+        '    if (!results.multiFaceLandmarks?.length) {',
+        '      if (glassesRef.current) glassesRef.current.visible = false;',
+        '      return;',
+        '    }',
+        '    if (glassesRef.current) {',
+        '      glassesRef.current.visible = true;',
+        '      updateGlassesTransform(glassesRef.current, results.multiFaceLandmarks[0],',
+        '        videoRef.current.videoWidth, videoRef.current.videoHeight, camera);',
+        '    }',
+        '    renderer.render(scene, camera);',
+        '  });',
+        '',
+        '  // 4. Preload model MediaPipe',
+        '  faceMesh.initialize().then(() => setModelReady(true));',
+        '',
+        '  // 5. Minta akses kamera',
+        '  navigator.mediaDevices.getUserMedia({',
+        '    video: { facingMode: "user", width: 640, height: 480 }',
+        '  }).then(stream => {',
+        '    videoRef.current.srcObject = stream;',
+        '    videoRef.current.onloadedmetadata = () => {',
+        '      // 6. Start camera loop SETELAH video siap',
+        '      const cam = new Camera(videoRef.current, {',
+        '        onFrame: async () => { await faceMesh.send({ image: videoRef.current }); },',
+        '        width: 640, height: 480',
+        '      });',
+        '      cam.start();',
+        '    };',
+        '  });',
+        '}, []);',
+      ]),
+
+      sep(),
+
+      // RINGKASAN
+      h1('7. Ringkasan Checklist untuk Agent'),
+      new Paragraph({spacing:{before:100,after:80},children:[]}),
+      table2([
+        row2('✓ / ✗', 'Item Wajib', true),
+        row2('[ ]', 'Gunakan demo_vto_round_glasses.glb — BUKAN glasses_converted.glb'),
+        row2('[ ]', 'Copy GLB ke /public/ folder'),
+        row2('[ ]', 'Three.js renderer dengan alpha:true dan setClearColor(0,0)'),
+        row2('[ ]', 'Canvas Three.js di-overlay atas video dengan position:absolute'),
+        row2('[ ]', 'Sembunyikan 5 helper nodes: bridge/left_hinge/right_hinge/left_lens_center/right_lens_center'),
+        row2('[ ]', 'Lensa: transparent=true, depthWrite=false, side=DoubleSide'),
+        row2('[ ]', 'Temple: side=DoubleSide untuk cegah backface culling'),
+        row2('[ ]', 'Anchor posisi = lm[6] (nose bridge), bukan rata-rata mata'),
+        row2('[ ]', 'Skala dihitung real-time dari eyeDistWorld × 2.6 / 124 (model width)'),
+        row2('[ ]', 'Rotasi Z = atan2(dy, dx) dari vektor antar pupil'),
+        row2('[ ]', 'EMA smoothing untuk position, scale, rotZ, rotY, rotX'),
+        row2('[ ]', 'faceMesh.initialize() dipanggil di mount, bukan saat klik'),
+        row2('[ ]', 'Camera loop dimulai SETELAH onloadedmetadata fired'),
+        row2('[ ]', 'Camera.far = 2000 minimal'),
+      ]),
+
+      new Paragraph({spacing:{before:200,after:0},children:[]}),
+      body('Dokumen ini dihasilkan dari analisis programatik nyata terhadap kedua file GLB yang diberikan. Semua nilai numerik (bounding box, node names, material names) adalah data faktual — bukan estimasi.', {italics:true, color:'888888'}),
+    ]
+  }]
+});
+
+Packer.toBuffer(doc).then(buf => {
+  fs.writeFileSync('/mnt/user-data/outputs/VTO_3D_Precision_Brief.docx', buf);
+  console.log('Done!');
+});
