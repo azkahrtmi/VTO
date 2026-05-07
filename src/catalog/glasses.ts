@@ -1,44 +1,32 @@
-import type { GlassesModel } from '../types/glasses';
+import type { Glasses } from '../types/glasses';
 
-export const GLASSES_CATALOG: GlassesModel[] = [
+export const GLASSES_CATALOG: Glasses[] = [
   {
-    id: 'aviator',
-    sku: 'rayban_aviator_or_vertFlash',
+    id: 'aviator-gold',
     name: 'Aviator Gold',
-    category: 'aviator',
+    sku: '6d1c8f4a-8b2d-4e1a-9c3f-7a5b1d9e2f4a', 
     color: '#D4AF37',
     type: 'jeeliz'
   },
   {
     id: 'round-pink',
-    sku: 'rayban_round_cuivre_pinkBrownDegrade',
     name: 'Round Pink',
-    category: 'round',
-    color: '#E0B0FF',
+    sku: '4f2e9d8c-7b1a-4c2d-8e5f-3a9b1d7c4e2f', 
+    color: '#FFB6C1',
     type: 'jeeliz'
   },
   {
     id: 'carrera-blue',
-    sku: 'carrera_113S_blue',
     name: 'Carrera Blue',
-    category: 'aviator',
+    sku: '2a8d7f3c-5e4a-4b1d-9c8f-1a3d5e7f9b2c', 
     color: '#0000FF',
     type: 'jeeliz'
   },
   {
-    id: 'round-glasses-local',
-    sku: '/demo_vto_round_glasses.glb',
+    id: 'round-local',
     name: 'Round Local',
-    category: 'round',
+    sku: '/demo_vto_round_glasses.glb',
     color: '#333333',
-    type: 'local'
-  },
-  {
-    id: 'glasses-converted-local',
-    sku: '/glasses_converted.glb',
-    name: 'Converted Local',
-    category: 'wayfarer',
-    color: '#555555',
     type: 'local'
   }
 ];

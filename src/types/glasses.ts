@@ -1,12 +1,13 @@
-export interface GlassesModel {
-  id: string;
-  sku: string;
-  name: string;
-  category: 'wayfarer' | 'round' | 'aviator' | 'cat-eye';
-  color: string;
-  type: 'jeeliz' | 'local';
+/** 
+ * VTO Glasses Type Definition 
+ * Menggunakan class agar modul tidak kosong saat dikompilasi ke JS
+ */
+export class Glasses {
+  id: string = '';
+  sku: string = '';
+  name: string = '';
+  color: string = '';
+  type: 'jeeliz' | 'local' = 'local';
 }
 
-
-
-export {};
+export const VTO_CHECK = true;
