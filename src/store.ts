@@ -1,24 +1,36 @@
-type Style = 'classic' | 'round' | 'visor' | 'custom';
+import { create } from 'zustand';
 
-class Store {
-  private style: Style = 'classic';
-  private listeners: Set<(style: Style) => void> = new Set();
+interface AppState {
+  showDots: boolean;
+  showGlasses: boolean;
+  selectedGlassesId: string;
+  isAdjustMode: boolean;
+  userScale: number;
 
-  getStyle() {
-    return this.style;
-  }
-
-  setStyle(style: Style) {
-    this.style = style;
-    this.listeners.forEach((l) => l(style));
-  }
-
-  subscribe(listener: (style: Style) => void) {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  }
+  setShowDots: (val: boolean) => void;
+  setShowGlasses: (val: boolean) => void;
+  setSelectedGlassesId: (id: string) => void;
+  setUserScale: (scale: number) => void;
+  setAdjustMode: (val: boolean) => void;
 }
 
-export const appStore = new Store();
+export const useAppStore = create<AppState>((set) => ({
+  showDots: true,
+  showGlasses: true,
+  selectedGlassesId: 'round-local',
+  isAdjustMode: false,
+
+  userScale: 1.0,
+  setShowDots: (val) => set({ showDots: val }),
+  setShowGlasses: (val) => set({ showGlasses: val }),
+  setSelectedGlassesId: (id) => set({ selectedGlassesId: id }),
+  setUserScale: (val) => set({ userScale: val }),
+  setAdjustMode: (val) => set({ isAdjustMode: val }),
+}));
+
+// Legacy support if needed, but we should move to useAppStore
+export const appStore = {
+  getState: () => useAppStore.getState(),
+  subscribe: (fn: (state: any) => void) => useAppStore.subscribe(fn),
+  updateState: (updates: Partial<AppState>) => useAppStore.setState(updates),
+};

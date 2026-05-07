@@ -1,11 +1,10 @@
 class LowPassFilter {
-  private a: number;
-  private y: number | null = null;
   private s: number | null = null;
 
-  constructor(alpha: number) {
-    this.a = alpha;
+  constructor(_alpha: number) {
+    // alpha is handled in filterWithAlpha
   }
+
 
   hasLastValue(): boolean {
     return this.s !== null;
@@ -16,13 +15,11 @@ class LowPassFilter {
   }
 
   filterWithAlpha(value: number, alpha: number): number {
-    this.a = alpha;
     if (this.s === null) {
       this.s = value;
     } else {
       this.s = alpha * value + (1.0 - alpha) * this.s;
     }
-    this.y = value;
     return this.s;
   }
 }

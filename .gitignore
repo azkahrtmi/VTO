@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+VTO_Technical_Briefing.docx
+ped.txt
+
 
 # Editor directories and files
 .vscode/*
