@@ -70,9 +70,9 @@ export const MindARVTO = () => {
           <a-gltf-model 
             key={modelSrc}
             src={modelSrc}
-            position="0 -0.02 0.05" 
-            rotation="10 0 0" 
-            scale="0.007 0.007 0.007"
+            position="0 0 0" 
+            rotation="0 0 0" 
+            scale="6.8 6.8 6.8"
           ></a-gltf-model>
         </a-entity>
       </a-scene>

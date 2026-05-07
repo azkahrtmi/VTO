@@ -28,5 +28,19 @@ export const GLASSES_CATALOG: Glasses[] = [
     sku: '/glasses-6.glb',
     color: '#2a2a2a',
     type: 'local'
+  },
+  {
+    id: 'tom-ford-eva',
+    name: 'Tom Ford Eva',
+    sku: '/tom_ford_eva_shiny_gold_black.glb',
+    color: '#D4AF37',
+    type: 'local'
+  },
+  {
+    id: 'coba1',
+    name: 'Coba 1 (Test)',
+    sku: '/coba1.glb',
+    color: '#FF0000',
+    type: 'local'
   }
 ];
