@@ -1,29 +1,21 @@
 import { useState } from 'react';
-import { Camera, RefreshCw, Settings, Check } from 'lucide-react';
-import { JeelizVTO } from './components/JeelizVTO';
-import { MediaPipeVTO } from './components/MediaPipeVTO';
+import { Camera, RefreshCw } from 'lucide-react';
+import { MindARVTO } from './components/MindARVTO';
 import { useAppStore } from './store';
 import { GLASSES_CATALOG } from './catalog/glasses';
 
 function App() {
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const { 
-    selectedGlassesId, setSelectedGlassesId,
-    isAdjustMode, setAdjustMode
+    selectedGlassesId, setSelectedGlassesId
   } = useAppStore();
-
-  const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
 
   const handleStart = async () => {
     setLoading(true);
-    setError(null);
     try {
       setStarted(true);
-    } catch (err: any) {
-      setError(err.message || 'Failed to start AR experience');
     } finally {
       setLoading(false);
     }
@@ -31,18 +23,16 @@ function App() {
 
   return (
     <div className="vto-app">
-      {/* Video Background & 3D Layer */}
-      {started && (
-        selectedGlasses?.type === 'jeeliz' ? <JeelizVTO /> : <MediaPipeVTO />
-      )}
+      {/* MindAR Scene Background */}
+      {started && <MindARVTO />}
 
       {/* UI Layer */}
-      <div className="ui-layer">
+      <div className="ui-layer" style={{ zIndex: 10 }}>
         {!started && !loading && (
           <div className="welcome-screen">
             <div className="glass-card">
-              <h1 className="title">Virtual Try-On</h1>
-              <p className="subtitle">Discover your perfect look with our specialized AR widget.</p>
+              <h1 className="title">Virtual Try-On PRO</h1>
+              <p className="subtitle">Powered by MindAR & A-Frame for high stability.</p>
               <button className="btn-primary" onClick={handleStart}>
                 <Camera size={20} />
                 <span>Start Experience</span>
@@ -54,44 +44,33 @@ function App() {
         {loading && (
           <div className="loading-screen">
             <RefreshCw className="spinner" size={48} />
-            <p>Initializing AR Engine...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="error-screen">
-            <p className="error-msg">{error}</p>
-            <button className="btn-secondary" onClick={() => window.location.reload()}>Retry</button>
+            <p>Loading AR System...</p>
           </div>
         )}
 
         {started && (
-          <>
-            <div className="top-controls">
-              <button 
-                className={`btn-icon ${isAdjustMode ? 'active' : ''}`} 
-                onClick={() => setAdjustMode(!isAdjustMode)}
-                title={isAdjustMode ? "Save Adjustment" : "Adjust Glasses"}
-              >
-                {isAdjustMode ? <Check size={20} /> : <Settings size={20} />}
-              </button>
+          <div className="bottom-shelf">
+            <div className="glasses-grid">
+              {GLASSES_CATALOG.map((item) => (
+                <button 
+                  key={item.id}
+                  className={`glasses-item ${selectedGlassesId === item.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedGlassesId(item.id)}
+                >
+                  <div className="swatch" style={{ backgroundColor: item.color }}></div>
+                  <span className="name">{item.name}</span>
+                </button>
+              ))}
             </div>
-
-            <div className="bottom-shelf">
-              <div className="glasses-grid">
-                {GLASSES_CATALOG.map((item) => (
-                  <button 
-                    key={item.id}
-                    className={`glasses-item ${selectedGlassesId === item.id ? 'selected' : ''}`}
-                    onClick={() => setSelectedGlassesId(item.id)}
-                  >
-                    <div className="swatch" style={{ backgroundColor: item.color }}></div>
-                    <span className="name">{item.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
+            
+            {/* Back button */}
+            <button 
+              style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid #fff', color: '#fff', borderRadius: '8px' }}
+              onClick={() => window.location.reload()}
+            >
+              Back to Menu
+            </button>
+          </div>
         )}
       </div>
     </div>

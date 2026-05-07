@@ -1,144 +1,83 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { useAppStore } from '../store';
-import { GLASSES_CATALOG } from '../catalog/glasses';
+import React, { useEffect, useRef } from 'react';
 
 declare global {
-  interface Window {
-    MINDAR: any;
-    THREE: any;
+  namespace JSX {
+    interface IntrinsicElements {
+      'a-scene': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
+      'a-assets': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
+      'a-asset-item': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
+      'a-camera': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
+      'a-entity': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
+      'a-gltf-model': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { [key: string]: any };
+    }
   }
 }
 
-export function MindARVTO() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { selectedGlassesId } = useAppStore();
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const mindarThreeRef = useRef<any>(null);
-
-  const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
+export const MindARVTO = () => {
+  const sceneRef = useRef<any>(null);
 
   useEffect(() => {
-    let active = true;
-    let checkInterval: any;
-
-    const startAR = async () => {
-      // 1. Check if MINDAR is loaded
-      if (!window.MINDAR || !window.MINDAR.FACE) {
-        console.log("MindAR: Waiting for library to load...");
-        checkInterval = setTimeout(startAR, 500); // Retry in 500ms
-        return;
-      }
-
-      if (!containerRef.current || !selectedGlasses) return;
-
-      try {
-        // 2. Initialize MindAR Face
-        const mindarThree = new window.MINDAR.FACE.MindARThree({
-          container: containerRef.current!
-        });
-        const { renderer, scene, camera } = mindarThree;
-        mindarThreeRef.current = mindarThree;
-
-        // 3. Add Lighting
-        const anchor = mindarThree.addAnchor(168); // Nose bridge anchor
-        const light = new window.THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-        scene.add(light);
-        const dirLight = new window.THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(5, 5, 5);
-        scene.add(dirLight);
-
-        // 4. Load Model
-        const loader = new GLTFLoader();
-        loader.load(selectedGlasses.sku, (gltf) => {
-          if (!active) return;
-          const model = gltf.scene;
-
-          // Normalize model size for AR
-          const box = new window.THREE.Box3().setFromObject(model);
-          const size = new window.THREE.Vector3();
-          box.getSize(size);
-          const scaleMult = 1 / (size.x || 1); 
-          model.scale.set(scaleMult * 0.6, scaleMult * 0.6, scaleMult * 0.6); 
-          
-          const center = new window.THREE.Vector3();
-          box.getCenter(center);
-          model.position.set(-center.x * model.scale.x, -center.y * model.scale.y, -center.z * model.scale.z);
-
-          anchor.group.add(model);
-          setStatus('ready');
-        });
-
-        // 5. Start Engine
-        await mindarThree.start();
-        renderer.setAnimationLoop(() => {
-          renderer.render(scene, camera);
-        });
-      } catch (err) {
-        console.error("MindAR: Error during start:", err);
-        if (active) setStatus('error');
-      }
-    };
-
-    startAR();
-
+    const sceneEl = sceneRef.current;
     return () => {
-      active = false;
-      if (checkInterval) clearTimeout(checkInterval);
-      if (mindarThreeRef.current) {
-        mindarThreeRef.current.stop();
-        const renderer = mindarThreeRef.current.renderer;
-        if (renderer) {
-          renderer.setAnimationLoop(null);
-          renderer.dispose();
+      if (sceneEl && sceneEl.systems) {
+        const arSystem = sceneEl.systems['mindar-face-system'];
+        if (arSystem && typeof arSystem.stop === 'function') {
+          try {
+            arSystem.stop();
+          } catch (e) {
+            console.warn("MindAR stop warning:", e);
+          }
         }
       }
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
-      }
     };
-  }, [selectedGlassesId]);
+  }, []);
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 10 }}>
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-      
-      {status === 'loading' && (
-        <div style={{ 
-          position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', 
-          alignItems: 'center', justifyContent: 'center', background: 'rgba(15, 23, 42, 0.9)',
-          color: '#fff', zIndex: 20, backdropFilter: 'blur(10px)'
-        }}>
-          <div style={{ 
-            width: '40px', height: '40px', border: '4px solid rgba(255,255,255,0.1)', 
-            borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite' 
-          }} />
-          <h3 style={{ marginTop: '1.5rem', fontSize: '1.2rem' }}>Initializing AR Experience</h3>
-          <p style={{ marginTop: '0.5rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-            Downloading face tracking modules...
-          </p>
-        </div>
-      )}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1, overflow: 'hidden', background: '#000' }}>
+      <a-scene 
+        ref={sceneRef} 
+        mindar-face="uiScanning: #scanning-overlay; uiError: yes; uiLoading: yes" 
+        embedded 
+        color-space="sRGB" 
+        renderer="colorManagement: true, physicallyCorrectLights" 
+        vr-mode-ui="enabled: false" 
+        device-orientation-permission-ui="enabled: false"
+      >
+        <a-assets>
+          <a-asset-item id="glassesModel" src="/demo_vto_round_glasses.glb"></a-asset-item>
+          <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/examples/face-tracking/assets/sparkar/headOccluder.glb"></a-asset-item>
+        </a-assets>
 
-      {status === 'error' && (
-        <div style={{ 
-          position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', 
-          alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.9)',
-          color: '#ff4444', zIndex: 30 
-        }}>
-          <p>Failed to load AR Engine.</p>
-          <button onClick={() => window.location.reload()} style={{ marginTop: '1rem', padding: '10px 20px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px' }}>
-            Retry
-          </button>
-        </div>
-      )}
+        <a-camera active="false" position="0 0 0" look-controls="enabled: false"></a-camera>
+
+        {/* --- HEAD OCCLUDER (Topeng Gaib) --- */}
+        <a-entity mindar-face-target="anchorIndex: 168">
+          <a-gltf-model 
+            mindar-face-occluder 
+            src="#headModel" 
+            position="0 -0.3 -0.1" 
+            rotation="0 0 0" 
+            scale="0.08 0.08 0.08"
+          ></a-gltf-model>
+        </a-entity>
+
+        {/* --- KACAMATA --- */}
+        <a-entity mindar-face-target="anchorIndex: 168">
+          <a-gltf-model 
+            src="#glassesModel" 
+            position="0 -0.02 0.05" 
+            rotation="10 0 0" 
+            scale="0.007 0.007 0.007"
+          ></a-gltf-model>
+        </a-entity>
+      </a-scene>
+
+      <div id="scanning-overlay" style={{ display: 'none' }}></div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .mindar-ui-overlay { display: none !important; }
-        .mindar-ui-loading { display: none !important; }
-        video { object-fit: cover !important; }
+        video { pointer-events: none; }
       `}} />
     </div>
   );
-}
+};
