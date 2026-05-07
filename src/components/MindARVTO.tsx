@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { useAppStore } from '../store';
+import { GLASSES_CATALOG } from '../catalog/glasses';
 
 declare global {
   namespace JSX {
@@ -15,6 +17,9 @@ declare global {
 
 export const MindARVTO = () => {
   const sceneRef = useRef<any>(null);
+  const { selectedGlassesId } = useAppStore();
+  const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
+  const modelSrc = selectedGlasses?.sku || '/demo_vto_round_glasses.glb';
 
   useEffect(() => {
     const sceneEl = sceneRef.current;
@@ -44,7 +49,6 @@ export const MindARVTO = () => {
         device-orientation-permission-ui="enabled: false"
       >
         <a-assets>
-          <a-asset-item id="glassesModel" src="/demo_vto_round_glasses.glb"></a-asset-item>
           <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/examples/face-tracking/assets/sparkar/headOccluder.glb"></a-asset-item>
         </a-assets>
 
@@ -64,7 +68,8 @@ export const MindARVTO = () => {
         {/* --- KACAMATA --- */}
         <a-entity mindar-face-target="anchorIndex: 168">
           <a-gltf-model 
-            src="#glassesModel" 
+            key={modelSrc}
+            src={modelSrc}
             position="0 -0.02 0.05" 
             rotation="10 0 0" 
             scale="0.007 0.007 0.007"
