@@ -1,13 +1,7 @@
 import { useState } from 'react';
-<<<<<<< HEAD
 import { Camera, RefreshCw } from 'lucide-react';
 import { MindARVTO } from './components/MindARVTO';
-=======
-import { RefreshCw, Settings, Check } from 'lucide-react';
-import { JeelizVTO } from './components/JeelizVTO';
-import { MediaPipeVTO } from './components/MediaPipeVTO';
 import { LandingPage } from './components/landing/LandingPage';
->>>>>>> 79fcda1b626c3f66d9f9f589a9d6d6be4d66014a
 import { useAppStore } from './store';
 import { GLASSES_CATALOG } from './catalog/glasses';
 
@@ -36,20 +30,7 @@ function App() {
       {/* UI Layer */}
       <div className="ui-layer" style={{ zIndex: 10 }}>
         {!started && !loading && (
-<<<<<<< HEAD
-          <div className="welcome-screen">
-            <div className="glass-card">
-              <h1 className="title">Virtual Try-On PRO</h1>
-              <p className="subtitle">Powered by MindAR & A-Frame for high stability.</p>
-              <button className="btn-primary" onClick={handleStart}>
-                <Camera size={20} />
-                <span>Start Experience</span>
-              </button>
-            </div>
-          </div>
-=======
           <LandingPage onStartTryOn={handleStart} />
->>>>>>> 79fcda1b626c3f66d9f9f589a9d6d6be4d66014a
         )}
 
         {loading && (

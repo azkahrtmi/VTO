@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 import React, { useEffect, useRef } from 'react';
-=======
-import { useEffect, useRef, useState } from 'react';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
->>>>>>> 79fcda1b626c3f66d9f9f589a9d6d6be4d66014a
 import { useAppStore } from '../store';
 import { GLASSES_CATALOG } from '../catalog/glasses';
 
@@ -27,73 +22,7 @@ export const MindARVTO = () => {
   const modelSrc = selectedGlasses?.sku || '/demo_vto_round_glasses.glb';
 
   useEffect(() => {
-<<<<<<< HEAD
     const sceneEl = sceneRef.current;
-=======
-    let active = true;
-    let checkInterval: any;
-
-    const startAR = async () => {
-      // 1. Check if MINDAR is loaded
-      if (!window.MINDAR || !window.MINDAR.FACE) {
-        console.log("MindAR: Waiting for library to load...");
-        checkInterval = setTimeout(startAR, 500); // Retry in 500ms
-        return;
-      }
-
-      if (!containerRef.current || !selectedGlasses) return;
-
-      try {
-        // 2. Initialize MindAR Face
-        const mindarThree = new window.MINDAR.FACE.MindARThree({
-          container: containerRef.current!
-        });
-        const { renderer, scene, camera } = mindarThree;
-        mindarThreeRef.current = mindarThree;
-
-        // 3. Add Lighting
-        const anchor = mindarThree.addAnchor(168); // Nose bridge anchor
-        const light = new window.THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-        scene.add(light);
-        const dirLight = new window.THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(5, 5, 5);
-        scene.add(dirLight);
-
-        // 4. Load Model
-        const loader = new GLTFLoader();
-        loader.load(selectedGlasses.sku, (gltf: { scene: any }) => {
-          if (!active) return;
-          const model = gltf.scene;
-
-          // Normalize model size for AR
-          const box = new window.THREE.Box3().setFromObject(model);
-          const size = new window.THREE.Vector3();
-          box.getSize(size);
-          const scaleMult = 1 / (size.x || 1); 
-          model.scale.set(scaleMult * 0.6, scaleMult * 0.6, scaleMult * 0.6); 
-          
-          const center = new window.THREE.Vector3();
-          box.getCenter(center);
-          model.position.set(-center.x * model.scale.x, -center.y * model.scale.y, -center.z * model.scale.z);
-
-          anchor.group.add(model);
-          setStatus('ready');
-        });
-
-        // 5. Start Engine
-        await mindarThree.start();
-        renderer.setAnimationLoop(() => {
-          renderer.render(scene, camera);
-        });
-      } catch (err) {
-        console.error("MindAR: Error during start:", err);
-        if (active) setStatus('error');
-      }
-    };
-
-    startAR();
-
->>>>>>> 79fcda1b626c3f66d9f9f589a9d6d6be4d66014a
     return () => {
       if (sceneEl && sceneEl.systems) {
         const arSystem = sceneEl.systems['mindar-face-system'];
