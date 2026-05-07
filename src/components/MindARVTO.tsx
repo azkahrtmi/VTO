@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { useEffect, useRef, useState } from 'react';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { useAppStore } from '../store';
 import { GLASSES_CATALOG } from '../catalog/glasses';
 
@@ -50,7 +50,7 @@ export function MindARVTO() {
 
         // 4. Load Model
         const loader = new GLTFLoader();
-        loader.load(selectedGlasses.sku, (gltf) => {
+        loader.load(selectedGlasses.sku, (gltf: { scene: any }) => {
           if (!active) return;
           const model = gltf.scene;
 

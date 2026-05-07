@@ -1,5 +1,6 @@
 import { LandingCollections } from './LandingCollections';
 import { LandingDiscover } from './LandingDiscover';
+import { LandingExtendedSections } from './LandingExtendedSections';
 import { LandingFooter } from './LandingFooter';
 import { LandingHero } from './LandingHero';
 import { LandingHighlights } from './LandingHighlights';
@@ -21,6 +22,7 @@ export function LandingPage({ onStartTryOn }: LandingPageProps) {
           <LandingHighlights />
         </div>
         <LandingCollections />
+        <LandingExtendedSections />
         <LandingDiscover />
         <LandingFooter />
       </div>
