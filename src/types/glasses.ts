@@ -4,6 +4,7 @@ export interface GlassesModel {
   name: string;
   category: 'wayfarer' | 'round' | 'aviator' | 'cat-eye';
   color: string;
+  type: 'jeeliz' | 'local';
 }
 
 

@@ -58,7 +58,13 @@ export function JeelizVTO() {
 
     return () => {
       isReady.current = false;
-      // JEELIZVTOWIDGET.destroy();
+      try {
+        // Disable resize sensor before destroying
+        JEELIZVTOWIDGET.toggle_resizeSensor(false);
+        JEELIZVTOWIDGET.destroy();
+      } catch (e) {
+        console.warn('Jeeliz Destroy Error:', e);
+      }
     };
   }, []);
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Camera, RefreshCw, Settings, Check } from 'lucide-react';
 import { JeelizVTO } from './components/JeelizVTO';
+import { MediaPipeVTO } from './components/MediaPipeVTO';
 import { useAppStore } from './store';
 import { GLASSES_CATALOG } from './catalog/glasses';
 
@@ -14,11 +15,12 @@ function App() {
     isAdjustMode, setAdjustMode
   } = useAppStore();
 
+  const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
+
   const handleStart = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Jeeliz starts its own camera loop when JeelizVTO mounts
       setStarted(true);
     } catch (err: any) {
       setError(err.message || 'Failed to start AR experience');
@@ -29,8 +31,10 @@ function App() {
 
   return (
     <div className="vto-app">
-      {/* Video Background & 3D Layer (Handled by Jeeliz) */}
-      {started && <JeelizVTO />}
+      {/* Video Background & 3D Layer */}
+      {started && (
+        selectedGlasses?.type === 'jeeliz' ? <JeelizVTO /> : <MediaPipeVTO />
+      )}
 
       {/* UI Layer */}
       <div className="ui-layer">
