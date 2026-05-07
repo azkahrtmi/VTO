@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Camera, RefreshCw, Settings, Check } from 'lucide-react';
+import { RefreshCw, Settings, Check } from 'lucide-react';
 import { JeelizVTO } from './components/JeelizVTO';
 import { MediaPipeVTO } from './components/MediaPipeVTO';
+import { LandingPage } from './components/landing/LandingPage';
 import { useAppStore } from './store';
 import { GLASSES_CATALOG } from './catalog/glasses';
 
@@ -39,16 +40,7 @@ function App() {
       {/* UI Layer */}
       <div className="ui-layer">
         {!started && !loading && (
-          <div className="welcome-screen">
-            <div className="glass-card">
-              <h1 className="title">Virtual Try-On</h1>
-              <p className="subtitle">Discover your perfect look with our specialized AR widget.</p>
-              <button className="btn-primary" onClick={handleStart}>
-                <Camera size={20} />
-                <span>Start Experience</span>
-              </button>
-            </div>
-          </div>
+          <LandingPage onStartTryOn={handleStart} />
         )}
 
 
