@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, X, Camera } from 'lucide-react';
 import { MindARVTO } from './components/MindARVTO';
 import { LandingPage } from './components/landing/LandingPage';
 import { useAppStore } from './store';
@@ -22,49 +22,59 @@ function App() {
     }
   };
 
+  const handleClose = () => {
+    window.location.reload();
+  };
+
   return (
     <div className="vto-app">
-      {/* MindAR Scene Background */}
-      {started && <MindARVTO />}
+      {/* Landing Page (always behind) */}
+      {!started && !loading && (
+        <LandingPage onStartTryOn={handleStart} />
+      )}
 
-      {/* UI Layer */}
-      <div className="ui-layer" style={{ zIndex: 10 }}>
-        {!started && !loading && (
-          <LandingPage onStartTryOn={handleStart} />
-        )}
+      {loading && (
+        <div className="loading-screen">
+          <RefreshCw className="spinner" size={48} />
+          <p>Loading AR System...</p>
+        </div>
+      )}
 
-        {loading && (
-          <div className="loading-screen">
-            <RefreshCw className="spinner" size={48} />
-            <p>Loading AR System...</p>
-          </div>
-        )}
-
-        {started && (
-          <div className="bottom-shelf">
-            <div className="glasses-grid">
-              {GLASSES_CATALOG.map((item) => (
-                <button 
-                  key={item.id}
-                  className={`glasses-item ${selectedGlassesId === item.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedGlassesId(item.id)}
-                >
-                  <div className="swatch" style={{ backgroundColor: item.color }}></div>
-                  <span className="name">{item.name}</span>
-                </button>
-              ))}
+      {/* VTO Modal Overlay */}
+      {started && (
+        <div className="vto-modal-overlay">
+          <div className="vto-modal">
+            {/* Modal Header */}
+            <div className="vto-modal-header">
+              <h3 className="vto-modal-title">Virtual Try-On</h3>
+              <button className="vto-modal-close" onClick={handleClose}>
+                <X size={20} />
+              </button>
             </div>
-            
-            {/* Back button */}
-            <button 
-              style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid #fff', color: '#fff', borderRadius: '8px' }}
-              onClick={() => window.location.reload()}
-            >
-              Back to Menu
-            </button>
+
+            {/* Camera Feed Container */}
+            <div className="vto-modal-camera">
+              <MindARVTO />
+            </div>
+
+            {/* Glasses Selector */}
+            <div className="vto-modal-selector">
+              <div className="vto-modal-glasses-row">
+                {GLASSES_CATALOG.map((item) => (
+                  <button 
+                    key={item.id}
+                    className={`vto-glass-chip ${selectedGlassesId === item.id ? 'active' : ''}`}
+                    onClick={() => setSelectedGlassesId(item.id)}
+                  >
+                    <div className="vto-glass-swatch" style={{ backgroundColor: item.color }}></div>
+                    <span>{item.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

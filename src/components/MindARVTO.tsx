@@ -8,8 +8,9 @@ export const MindARVTO = () => {
   const sceneRef = useRef<any>(null);
   const { selectedGlassesId } = useAppStore();
   const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
-  const modelSrc = selectedGlasses?.sku || '/demo_vto_round_glasses.glb';
+  const modelSrc = selectedGlasses?.sku;
 
+  // Cleanup: stop MindAR on unmount
   useEffect(() => {
     const sceneEl = sceneRef.current;
     return () => {
@@ -26,11 +27,27 @@ export const MindARVTO = () => {
     };
   }, []);
 
+  // Aggressively fix MindAR video z-index which defaults to -2
+  useEffect(() => {
+    const fixVideoInterval = setInterval(() => {
+      const video = document.querySelector('video');
+      if (video) {
+        video.style.setProperty('z-index', '1', 'important');
+      }
+      const canvas = document.querySelector('.a-canvas') as HTMLElement;
+      if (canvas) {
+        canvas.style.setProperty('z-index', '2', 'important');
+      }
+    }, 500);
+
+    return () => clearInterval(fixVideoInterval);
+  }, []);
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1, overflow: 'hidden', background: '#000' }}>
+    <div className="mindar-container">
       <a-scene 
         ref={sceneRef} 
-        mindar-face="uiScanning: #scanning-overlay; uiError: yes; uiLoading: yes" 
+        mindar-face="uiScanning: #scanning-overlay; uiError: yes; uiLoading: yes; filterMinCF: 0.01; filterBeta: 100" 
         embedded 
         color-space="sRGB" 
         renderer="colorManagement: true, physicallyCorrectLights" 
@@ -41,36 +58,42 @@ export const MindARVTO = () => {
           <a-asset-item id="headModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/examples/face-tracking/assets/sparkar/headOccluder.glb"></a-asset-item>
         </a-assets>
 
-        <a-camera active="false" position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        {/* --- HEAD OCCLUDER (Topeng Gaib) --- */}
+        {/* --- HEAD OCCLUDER --- */}
         <a-entity mindar-face-target="anchorIndex: 168">
           <a-gltf-model 
-  // mindar-face-occluder 
-  src="#headModel" 
-  position="0 -0.35 0.15"  /* Mundurkan sedikit ke 0.15 */
-  rotation="0 0 0" 
-  scale="0.08 0.08 0.1"    /* X & Y dibesarkan ke 0.08 agar tidak gepeng */
-></a-gltf-model>
+            mindar-face-occluder 
+            src="#headModel" 
+            position="0 -0.35 0.15"
+            rotation="0 0 0" 
+            scale="0.08 0.08 0.1"
+          ></a-gltf-model>
         </a-entity>
 
         {/* --- KACAMATA --- */}
         <a-entity mindar-face-target="anchorIndex: 168">
-          <a-gltf-model 
-            key={modelSrc}
-            src={modelSrc}
-          position="0 0 -0.5"  
-            rotation="0 0 0" 
-        scale="0.153 0.153 0.153" 
-          ></a-gltf-model>
+          {selectedGlasses && (
+            <a-gltf-model 
+              key={modelSrc}
+              src={modelSrc}
+              position="0 0 -0.1"  
+              rotation="0 0 0" 
+              scale="6.5 6.5 6.5" 
+            ></a-gltf-model>
+          )}
         </a-entity>
       </a-scene>
 
       <div id="scanning-overlay" style={{ display: 'none' }}></div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .mindar-ui-overlay { display: none !important; }
-        video { pointer-events: none; }
+        .mindar-container video, .mindar-container canvas { 
+          z-index: 1 !important; 
+        }
+        .mindar-container .a-canvas {
+          z-index: 2 !important;
+        }
       `}} />
     </div>
   );

@@ -222,3 +222,169 @@ img {
     scroll-padding-left: 0;
   }
 }
+
+/* ========================================
+   VTO Modal (Essilor-style)
+   ======================================== */
+
+/* Dark overlay behind modal */
+.vto-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+/* The modal container */
+.vto-modal {
+  background: #1a1a2e;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  width: 100%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Modal header */
+.vto-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vto-modal-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+}
+
+.vto-modal-close {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vto-modal-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+/* Camera feed area */
+.vto-modal-camera {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  /* background removed so MindAR video (z-index: -2) can show through */
+}
+
+/* MindAR container fills the camera area */
+.mindar-container {
+  position: absolute;
+  inset: 0;
+}
+
+.mindar-container a-scene {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Glasses selector row */
+.vto-modal-selector {
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vto-modal-glasses-row {
+  display: flex;
+  gap: 0.625rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.25rem;
+}
+
+.vto-modal-glasses-row::-webkit-scrollbar {
+  display: none;
+}
+
+.vto-glass-chip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.vto-glass-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.vto-glass-chip.active {
+  background: rgba(12, 114, 135, 0.2);
+  border-color: #0c7287;
+  color: #67e8f9;
+}
+
+.vto-glass-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+/* ========================================
+   Mobile Responsive
+   ======================================== */
+
+@media (max-width: 640px) {
+  .vto-modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+  
+  .vto-modal {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    height: 100%;
+  }
+  
+  .vto-modal-camera {
+    flex: 1;
+    aspect-ratio: unset;
+  }
+}
