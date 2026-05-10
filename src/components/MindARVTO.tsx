@@ -46,12 +46,12 @@ export const MindARVTO = () => {
         {/* --- HEAD OCCLUDER (Topeng Gaib) --- */}
         <a-entity mindar-face-target="anchorIndex: 168">
           <a-gltf-model 
-            mindar-face-occluder 
-            src="#headModel" 
-            position="0 -0.3 -0.1" 
-            rotation="0 0 0" 
-            scale="0.08 0.08 0.08"
-          ></a-gltf-model>
+  // mindar-face-occluder 
+  src="#headModel" 
+  position="0 -0.35 0.15"  /* Mundurkan sedikit ke 0.15 */
+  rotation="0 0 0" 
+  scale="0.08 0.08 0.1"    /* X & Y dibesarkan ke 0.08 agar tidak gepeng */
+></a-gltf-model>
         </a-entity>
 
         {/* --- KACAMATA --- */}
@@ -59,9 +59,9 @@ export const MindARVTO = () => {
           <a-gltf-model 
             key={modelSrc}
             src={modelSrc}
-            position="0 0 0" 
+          position="0 0 -0.5"  
             rotation="0 0 0" 
-            scale="6.8 6.8 6.8"
+        scale="0.153 0.153 0.153" 
           ></a-gltf-model>
         </a-entity>
       </a-scene>
