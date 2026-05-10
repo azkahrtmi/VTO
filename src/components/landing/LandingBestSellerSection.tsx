@@ -1,8 +1,20 @@
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const bestSellerTabs = ["Best Seller", "Shop Men", "Shop Women", "Shop Sport"];
 
 export function LandingBestSellerSection() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const totalItems = 2;
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % totalItems);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + totalItems) % totalItems);
+  };
+
   return (
     <section className="overflow-hidden bg-white px-20 py-16 max-[1200px]:px-8 max-[920px]:px-4 max-[920px]:py-10">
       <div className="flex h-[534px] w-max gap-[129px] max-[1200px]:h-auto max-[1200px]:w-full max-[1200px]:flex-col max-[1200px]:gap-10">
@@ -12,7 +24,7 @@ export function LandingBestSellerSection() {
               <button
                 key={tab}
                 type="button"
-                className={`rounded-full font-['Outfit','Poppins',sans-serif] text-[12px] leading-[100%] font-medium ${
+                className={`rounded-full font-['Outfit','Poppins',sans-serif] text-[12px] leading-[100%] font-medium transition-all duration-300 ${
                   index === 0
                     ? "bg-[#173e24] px-4 py-[0.85rem] text-white"
                     : "px-0 py-[0.85rem] text-[#17181b]"
@@ -36,13 +48,23 @@ export function LandingBestSellerSection() {
           <div className="mt-auto flex items-center justify-end gap-7 pr-[168px] pt-10 max-[1200px]:mt-10 max-[1200px]:justify-start max-[1200px]:pr-0">
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e4dfd8] text-[#d3cdc6]"
+              onClick={prevSlide}
+              className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 ${
+                currentIndex === 0 
+                ? "border-[#e4dfd8] text-[#d3cdc6]" 
+                : "border-[#18562f] bg-[#18562f] text-white"
+              }`}
             >
               <ChevronLeft size={20} />
             </button>
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#18562f] text-white"
+              onClick={nextSlide}
+              className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 ${
+                currentIndex === totalItems - 1
+                ? "border-[#e4dfd8] text-[#d3cdc6]" 
+                : "border-[#18562f] bg-[#18562f] text-white"
+              }`}
             >
               <ChevronRight size={20} />
             </button>
@@ -50,7 +72,14 @@ export function LandingBestSellerSection() {
         </div>
 
         <div className="overflow-hidden">
-          <div className="flex gap-7">
+          <div 
+            className="flex gap-7 transition-transform duration-700 cubic-bezier(0.4, 0, 0.2, 1)"
+            style={{ 
+              transform: window.innerWidth < 920 
+                ? `translateX(-${currentIndex * (320 + 28)}px)`
+                : `translateX(-${currentIndex * (516 + 28)}px)` 
+            }}
+          >
             <div className="flex h-[534px] w-[516px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#f4f2ed] max-[920px]:h-[360px] max-[920px]:w-[320px]">
               <img
                 src="/landing/kacamata/discover/image2.png"
