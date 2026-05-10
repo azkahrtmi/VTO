@@ -79,7 +79,7 @@ export const MindARVTO = () => {
             <a-gltf-model 
               key={modelSrc}
               src={modelSrc}
-              position="0 0 -0.1"  
+              position="0 0 0"  
               rotation="0 0 0" 
               scale="6 6 6" 
             ></a-gltf-model>
