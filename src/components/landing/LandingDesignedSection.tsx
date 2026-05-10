@@ -68,36 +68,36 @@ export function LandingDesignedSection() {
         </article>
 
         <div className="grid grid-rows-[1fr_auto] gap-8">
-          <div className="grid grid-cols-2 gap-5 max-[720px]:grid-cols-1">
-            <article className="relative min-h-[366px] overflow-hidden rounded-[30px] p-7 text-white">
+          <div className="grid grid-cols-[251px_251px] gap-5 max-w-[522px] max-[720px]:grid-cols-1">
+            <article className="relative h-[292px] overflow-hidden rounded-[24px] p-5 text-white">
               <img
                 src="/landing/tech.png"
                 alt="Technology"
                 className="absolute inset-0 h-full w-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,25,84,0.15)_0%,rgba(12,25,84,0.28)_100%)]" />
-              <span className="absolute left-7 top-7 rounded-full bg-white px-6 py-4 font-['Outfit','Poppins',sans-serif] text-[18px] leading-[100%] font-medium text-[#1d1f23]">
+              <span className="absolute left-5 top-5 rounded-full bg-white px-4 py-2.5 font-['Outfit','Poppins',sans-serif] text-[11px] leading-[1] font-medium text-[#1d1f23]">
                 Technology
               </span>
               <div className="relative flex h-full items-end">
-                <h3 className="max-w-[220px] font-['Outfit','Poppins',sans-serif] text-[28px] leading-[1.18] font-medium">
+                <h3 className="max-w-[155px] font-['Outfit','Poppins',sans-serif] text-[18px] leading-[1.18] font-medium">
                   Advanced Vision Technology
                 </h3>
               </div>
             </article>
 
-            <article className="relative min-h-[366px] overflow-hidden rounded-[30px] p-7 text-white">
+            <article className="relative h-[292px] overflow-hidden rounded-[24px] p-5 text-white">
               <img
                 src="/landing/storepickup.jpg"
                 alt="Store pickup"
                 className="absolute inset-0 h-full w-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(26,22,18,0.04)_0%,rgba(26,22,18,0.24)_100%)]" />
-              <span className="absolute left-7 top-7 rounded-full bg-white px-6 py-4 font-['Outfit','Poppins',sans-serif] text-[18px] leading-[100%] font-medium text-[#1d1f23]">
+              <span className="absolute left-5 top-5 rounded-full bg-white px-4 py-2.5 font-['Outfit','Poppins',sans-serif] text-[11px] leading-[1] font-medium text-[#1d1f23]">
                 Store Pickup
               </span>
               <div className="relative flex h-full items-end">
-                <h3 className="max-w-[220px] font-['Outfit','Poppins',sans-serif] text-[28px] leading-[1.18] font-medium">
+                <h3 className="max-w-[155px] font-['Outfit','Poppins',sans-serif] text-[18px] leading-[1.18] font-medium">
                   Shopping Experience
                 </h3>
               </div>
@@ -107,15 +107,15 @@ export function LandingDesignedSection() {
           <div className="flex items-center gap-8 px-2 pt-1 max-[720px]:justify-center">
             <button
               type="button"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-[#d6d3ce] text-[#c8c3bd]"
+              className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-[#d6d3ce] text-[#c8c3bd]"
             >
               <ChevronLeft size={24} />
             </button>
             <button
               type="button"
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-[#18562f] text-white"
+              className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#18562f] text-white"
             >
-              <ChevronRight size={26} />
+              <ChevronRight size={24} />
             </button>
           </div>
         </div>
