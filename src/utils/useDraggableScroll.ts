@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback } from "react";
 
 export function useDraggableScroll() {
   const ref = useRef<HTMLDivElement>(null);
