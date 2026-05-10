@@ -104,26 +104,26 @@ export function LandingRecommendedSection() {
                 />
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5 px-[6px] pb-[6px] max-[920px]:space-y-3 max-[920px]:px-0 max-[920px]:pb-0">
                 <div className="flex items-end justify-between gap-3">
-                  <div className="space-y-3">
-                    <h3 className="font-['Outfit','Poppins',sans-serif] text-[24px] leading-[100%] font-semibold text-[#202123]">
+                  <div className="space-y-2">
+                    <h3 className="font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-semibold text-[#202123] max-[920px]:text-[24px]">
                       {item.brand}
                     </h3>
-                    <p className="font-['Outfit','Poppins',sans-serif] text-[28px] leading-[100%] font-normal text-[#202123]">
+                    <p className="font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#202123] max-[920px]:text-[28px]">
                       {item.model}
                     </p>
                   </div>
-                  <p className="pb-1 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-medium text-[#394250]">
+                  <p className="pb-1 font-['Outfit','Poppins',sans-serif] text-[11px] leading-[100%] font-medium text-[#394250] max-[920px]:text-[16px]">
                     {item.price}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5 max-[920px]:gap-3">
                   {item.colors.map((color) => (
                     <span
                       key={`${item.model}-${color}`}
-                      className="block h-7 w-7 rounded-full border border-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                      className="block h-5 w-5 rounded-full border border-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] max-[920px]:h-7 max-[920px]:w-7"
                       style={{ background: color }}
                     />
                   ))}
