@@ -9,7 +9,6 @@ export const MindARVTO = () => {
   const { selectedGlassesId } = useAppStore();
   const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
   const modelSrc = selectedGlasses?.sku;
-
   // Cleanup: stop MindAR on unmount
   useEffect(() => {
     const sceneEl = sceneRef.current;
@@ -24,6 +23,57 @@ export const MindARVTO = () => {
           }
         }
       }
+    };
+  }, []);
+
+  // FINAL FIX FOR HIGH DPI SCALING ISSUES (125%, 150%, etc)
+  // A-Frame has a known bug where it multiplies canvas dimensions by window.devicePixelRatio
+  // during its internal resize event. This breaks MindAR's projection matrix.
+  // We fix this by intercepting the renderer's setPixelRatio method and forcing it to 1.
+  useEffect(() => {
+    const applyDPRFix = () => {
+      if (sceneRef.current && sceneRef.current.renderer) {
+        const renderer = sceneRef.current.renderer;
+        
+        // Only patch it once
+        if (!renderer._isDprPatched) {
+          const originalSetPixelRatio = renderer.setPixelRatio.bind(renderer);
+          
+          // Override the method to ALWAYS use 1, ignoring OS scaling
+          renderer.setPixelRatio = function(ratio: number) {
+            originalSetPixelRatio(1);
+          };
+          
+          renderer._isDprPatched = true;
+          
+          // Force apply right now
+          renderer.setPixelRatio(1);
+          if (sceneRef.current.resize) sceneRef.current.resize();
+        }
+      }
+    };
+
+    // Apply fix repeatedly for the first few seconds to ensure it catches A-Frame's late init
+    applyDPRFix();
+    const interval = setInterval(applyDPRFix, 200);
+    setTimeout(() => clearInterval(interval), 2000);
+
+    // Also trigger MindAR resize on window resize
+    const handleResize = () => {
+      setTimeout(() => {
+        if (sceneRef.current && sceneRef.current.systems) {
+          const faceSystem = sceneRef.current.systems['mindar-face-system'];
+          if (faceSystem && typeof faceSystem.resize === 'function') {
+            faceSystem.resize();
+          }
+        }
+      }, 300);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -47,10 +97,10 @@ export const MindARVTO = () => {
     <div className="mindar-container">
       <a-scene 
         ref={sceneRef} 
-        mindar-face="uiScanning: #scanning-overlay; uiError: yes; uiLoading: yes; filterMinCF: 0.1; filterBeta: 10" 
+        mindar-face="uiScanning: #scanning-overlay; uiError: yes; uiLoading: yes; filterMinCF: 0.1; filterBeta: 10; mirror: false" 
         embedded 
         color-space="sRGB" 
-        renderer="colorManagement: true, physicallyCorrectLights" 
+        renderer="colorManagement: true, physicallyCorrectLights, antialias: true, precision: high, devicePixelRatio: 1" 
         vr-mode-ui="enabled: false" 
         device-orientation-permission-ui="enabled: false"
       >
@@ -79,7 +129,7 @@ export const MindARVTO = () => {
             <a-gltf-model 
               key={modelSrc}
               src={modelSrc}
-              position="0 0 0"  
+              position={window.innerWidth < 768 ? "0.02 -0.09 0.05" : "0 -0.4 0.05"}  
               rotation="0 0 0" 
               scale="6 6 6" 
             ></a-gltf-model>
@@ -90,12 +140,25 @@ export const MindARVTO = () => {
       <div id="scanning-overlay" style={{ display: 'none' }}></div>
 
       <style dangerouslySetInnerHTML={{ __html: `
+        .mindar-container {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
         .mindar-container video, .mindar-container canvas { 
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
           z-index: 1 !important; 
+          margin: 0 !important;
+          object-fit: cover !important;
         }
         .mindar-container .a-canvas {
           z-index: 2 !important;
         }
+        .a-enter-vr { display: none !important; }
       `}} />
     </div>
   );
