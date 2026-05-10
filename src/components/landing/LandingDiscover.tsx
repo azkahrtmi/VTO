@@ -17,7 +17,7 @@ export function LandingDiscover() {
             </h2>
             <button
               type="button"
-              className="mt-5 rounded-full bg-white px-5 py-3 font-['Outfit','Poppins',sans-serif] text-[17px] leading-[130%] font-extrabold tracking-[-0.01em] text-[#1E1E1E] transition-transform duration-200 hover:-translate-y-px"
+              className="mt-5 rounded-full bg-[#084D26] px-5 py-3 font-['Outfit','Poppins',sans-serif] text-[17px] leading-[130%] font-extrabold tracking-[-0.01em] text-white transition-transform duration-200 hover:-translate-y-px"
             >
               Shop Sunglasses
             </button>

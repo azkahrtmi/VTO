@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
-import { Heart, ScanSearch } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { Heart, ScanSearch } from "lucide-react";
 
 type CollectionItem = {
   brand: string;
@@ -12,32 +12,32 @@ type CollectionItem = {
 
 const collections: CollectionItem[] = [
   {
-    brand: 'Ic! berlin',
-    model: 'Brady',
-    price: 'Rp 1.500.000',
-    image: '/landing/kacamata/Brady Sea Glass Grey.png',
-    colors: ['#ece8e2', '#8aa8ba', '#111111'],
+    brand: "Ic! berlin",
+    model: "Brady",
+    price: "Rp 1.500.000",
+    image: "/landing/kacamata/Brady Sea Glass Grey.png",
+    colors: ["#ece8e2", "#8aa8ba", "#111111"],
   },
   {
-    brand: 'Prada',
-    model: 'Ketty',
-    price: 'Rp 3.300.000',
-    image: '/landing/kacamata/image.png',
-    colors: ['#6a1119', '#b89669'],
+    brand: "Prada",
+    model: "Ketty",
+    price: "Rp 3.300.000",
+    image: "/landing/kacamata/image.png",
+    colors: ["#6a1119", "#b89669"],
   },
   {
-    brand: 'Ic! berlin',
-    model: 'Mel',
-    price: 'Rp 1.800.000',
-    image: '/landing/kacamata/image copy.png',
-    colors: ['#8a5a22', '#7f264d'],
+    brand: "Ic! berlin",
+    model: "Mel",
+    price: "Rp 1.800.000",
+    image: "/landing/kacamata/image copy.png",
+    colors: ["#8a5a22", "#7f264d"],
   },
   {
-    brand: 'Burberry',
-    model: 'Elias',
-    price: 'Rp 2.400.000',
-    image: '/landing/kacamata/Brady Sea Glass Grey.png',
-    colors: ['#50604b', '#6d2b10', '#90b0bf'],
+    brand: "Burberry",
+    model: "Elias",
+    price: "Rp 2.400.000",
+    image: "/landing/kacamata/Brady Sea Glass Grey.png",
+    colors: ["#50604b", "#6d2b10", "#90b0bf"],
   },
 ];
 
@@ -63,8 +63,8 @@ export function LandingCollections() {
     };
 
     resetToMiddle();
-    window.addEventListener('resize', resetToMiddle);
-    return () => window.removeEventListener('resize', resetToMiddle);
+    window.addEventListener("resize", resetToMiddle);
+    return () => window.removeEventListener("resize", resetToMiddle);
   }, []);
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -111,7 +111,8 @@ export function LandingCollections() {
       }
     }
 
-    const normalizedOffset = ((track.scrollLeft - setWidth) % setWidth + setWidth) % setWidth;
+    const normalizedOffset =
+      (((track.scrollLeft - setWidth) % setWidth) + setWidth) % setWidth;
     const nextIndex = Math.round(normalizedOffset / step) % collections.length;
     setCurrentIndex(nextIndex);
   };
@@ -124,7 +125,7 @@ export function LandingCollections() {
         </h2>
         <button
           type="button"
-          className="rounded-full border border-[#202123] px-8 py-4 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#202123] transition-colors duration-200 hover:bg-[#202123] hover:text-white"
+          className="rounded-full border border-[#084D26] px-8 py-4 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#084D26] transition-colors duration-200 hover:bg-[#084D26] hover:text-white"
         >
           Shop New Collections
         </button>
@@ -132,7 +133,7 @@ export function LandingCollections() {
 
       <div
         ref={trackRef}
-        className={`landing-collections-scroll mr-[-6.8rem] overflow-x-auto pb-2 pr-[6.8rem] select-none max-[920px]:mr-[-1rem] max-[920px]:pr-4 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`landing-collections-scroll mr-[-6.8rem] overflow-x-auto pb-2 pr-[6.8rem] select-none max-[920px]:mr-[-1rem] max-[920px]:pr-4 ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -146,7 +147,9 @@ export function LandingCollections() {
               className="w-[500px] flex-none snap-start rounded-[20px] bg-[#f6f5f4] p-5 max-[920px]:w-[340px]"
               style={{
                 transform:
-                  currentIndex === index % collections.length ? 'scale(1)' : 'scale(0.985)',
+                  currentIndex === index % collections.length
+                    ? "scale(1)"
+                    : "scale(0.985)",
                 opacity: currentIndex === index % collections.length ? 1 : 0.96,
               }}
             >
@@ -195,7 +198,7 @@ export function LandingCollections() {
                   {item.colors.map((color, swatchIndex) => (
                     <span
                       key={`${item.model}-${color}`}
-                      className={`block h-7 w-7 rounded-full border ${swatchIndex === 0 ? 'border-[#202123]' : 'border-transparent'}`}
+                      className={`block h-7 w-7 rounded-full border ${swatchIndex === 0 ? "border-[#202123]" : "border-transparent"}`}
                       style={{ background: color }}
                     />
                   ))}

@@ -3,24 +3,28 @@ const recommendationCards = [
     brand: 'Versace',
     model: 'Esme',
     price: 'Rp 4.200.000',
+    image: '/landing/kacamata/image copy.png',
     colors: ['#c06f3c', '#edd7d3', '#6a8a89', '#b9bbef', '#1e1b1a', '#f3f0ea'],
   },
   {
     brand: 'Bonia',
     model: 'Wilkie',
     price: 'Rp 1.100.000',
+    image: '/landing/kacamata/image.png',
     colors: ['#161616', '#5a4e3f', '#d4d4d4', '#61705a', '#4e2a18', '#6e4632', '#efb25f'],
   },
   {
     brand: 'Bonia',
     model: 'Chamberlain',
     price: 'Rp 4.700.000',
+    image: '/landing/kacamata/Brady Sea Glass Grey.png',
     colors: ['#f4f4f4', '#5f5a46', '#3d4f77', '#4c240f', '#111111'],
   },
   {
     brand: 'Gucci',
     model: 'Durand',
     price: 'Rp 3.900.000',
+    image: '/landing/kacamata/image.png',
     colors: ['#35261d', '#eed6d1', '#9ebfd0', '#e7e9ef'],
   },
 ];
@@ -34,7 +38,7 @@ export function LandingRecommendedSection() {
         </h2>
         <button
           type="button"
-          className="rounded-full border border-[#202123] px-8 py-4 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#202123]"
+          className="rounded-full border border-[#084D26] px-8 py-4 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#084D26]"
         >
           Shop all
         </button>
@@ -63,8 +67,12 @@ export function LandingRecommendedSection() {
                 </button>
               </div>
 
-              <div className="mb-10 flex h-[330px] items-center justify-center rounded-[18px] bg-[radial-gradient(circle_at_center,#ffffff_0%,#f5f4f1_70%)] max-[920px]:h-[220px]">
-                <div className={`h-[150px] w-[360px] rounded-[90px] border-[16px] ${index === 0 ? 'border-[#8a593d]' : index === 1 ? 'border-[#1d2330]' : index === 2 ? 'border-[#dfe3e6]' : 'border-[#18191b]'}`} />
+              <div className="mb-10 flex h-[330px] items-center justify-center rounded-[18px] bg-[radial-gradient(circle_at_center,#ffffff_0%,#f5f4f1_70%)] px-5 max-[920px]:h-[220px]">
+                <img
+                  src={item.image}
+                  alt={`${item.brand} ${item.model}`}
+                  className="max-h-full w-full object-contain mix-blend-multiply"
+                />
               </div>
 
               <div className="space-y-3">
