@@ -70,19 +70,28 @@ export function LandingDesignedSection() {
       <div className="grid grid-cols-[1.45fr_1fr] gap-8 max-[1280px]:grid-cols-1">
         {/* Main Large Box */}
         <article className="grid min-h-[470px] grid-cols-[1.08fr_0.92fr] gap-6 rounded-[30px] bg-[#232222] p-10 text-white max-[920px]:grid-cols-1 max-[920px]:p-6 max-[920px]:min-h-0">
-          <div className="relative overflow-hidden rounded-[22px] aspect-[4/3] max-[920px]:aspect-square">
+          <div 
+            key={`img-${activeIndex}`}
+            className="relative overflow-hidden rounded-[22px] aspect-[4/3] max-[920px]:aspect-square animate-content-swap"
+          >
             <img
               src={mainItem.image}
               alt={mainItem.tag}
-              className="absolute inset-0 h-full w-full object-cover object-center transition-all duration-500"
+              className="absolute inset-0 h-full w-full object-cover object-center transition-all duration-700 ease-out"
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(22,22,22,0.08)_0%,rgba(22,22,22,0.16)_100%)]" />
-            <span className={`absolute left-5 top-5 rounded-full ${mainItem.tagBg} px-5 py-3 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-medium ${mainItem.tagText}`}>
+            <span 
+              key={`tag-${activeIndex}`}
+              className={`absolute left-5 top-5 rounded-full ${mainItem.tagBg} px-5 py-3 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-medium ${mainItem.tagText} animate-content-swap`}
+            >
               {mainItem.tag}
             </span>
           </div>
 
-          <div className="flex flex-col justify-between py-2">
+          <div 
+            key={activeIndex}
+            className="flex flex-col justify-between py-2 animate-content-swap"
+          >
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#1f1f1f]">
               {mainItem.icon}
             </div>
@@ -102,8 +111,8 @@ export function LandingDesignedSection() {
           <div className="grid grid-cols-[251px_251px] gap-5 max-w-[522px] max-[1280px]:max-w-none max-[1280px]:grid-cols-2 max-[720px]:hidden">
             {[sideItem1, sideItem2].map((item) => (
               <article 
-                key={item.id} 
-                className="relative h-[292px] overflow-hidden rounded-[24px] p-5 text-white transition-all duration-500 cursor-pointer hover:opacity-90"
+                key={`${item.id}-${activeIndex}`} 
+                className="relative h-[292px] overflow-hidden rounded-[24px] p-5 text-white transition-all duration-500 cursor-pointer hover:opacity-90 animate-content-swap"
                 onClick={() => setActiveIndex(designItems.indexOf(item))}
               >
                 <img
@@ -129,14 +138,14 @@ export function LandingDesignedSection() {
             <button
               type="button"
               onClick={handlePrev}
-              className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-[#d6d3ce] text-[#1d1f23] transition-colors hover:bg-gray-50"
+              className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-[#d6d3ce] text-[#1d1f23] transition-all hover:bg-gray-50 active:scale-90"
             >
               <ChevronLeft size={24} />
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#18562f] text-white transition-colors hover:bg-[#144726]"
+              className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#18562f] text-white transition-all hover:bg-[#144726] active:scale-90"
             >
               <ChevronRight size={24} />
             </button>
