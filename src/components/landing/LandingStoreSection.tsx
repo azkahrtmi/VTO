@@ -15,13 +15,19 @@ export function LandingStoreSection() {
           </p>
           <button
             type="button"
-            className="mt-10 rounded-full bg-[#1f1f1f] px-8 py-5 font-['Outfit','Poppins',sans-serif] text-[18px] leading-[100%] font-medium text-white"
+            className="mt-10 rounded-full bg-[#084D26] px-8 py-5 font-['Outfit','Poppins',sans-serif] text-[18px] leading-[100%] font-medium text-white"
           >
             Find your store
           </button>
         </div>
 
-        <div className="aspect-[1.2] overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#1d2134_0%,#5d6e88_42%,#a7b2be_100%)]" />
+        <div className="aspect-[1.2] overflow-hidden rounded-[28px] bg-[#eef0f3]">
+          <img
+            src="/landing/image.png"
+            alt="Visit a nearby store"
+            className="h-full w-full object-cover object-center"
+          />
+        </div>
       </div>
     </section>
   );

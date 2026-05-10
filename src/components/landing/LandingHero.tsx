@@ -24,7 +24,7 @@ export function LandingHero({ onStartTryOn }: LandingHeroProps) {
           </p>
           <div className="mt-7 flex flex-wrap gap-4 max-[560px]:flex-col">
             <button
-              className="min-h-[40px] rounded-full bg-[#fff7ef] px-[1.25rem] py-[0.72rem] font-['Outfit','Poppins',sans-serif] text-[14.6px] leading-[22px] font-medium tracking-[0.32px] text-[#1E1E1E] transition-transform duration-200 hover:-translate-y-px"
+              className="min-h-[40px] rounded-full bg-[#084D26] px-[1.25rem] py-[0.72rem] font-['Outfit','Poppins',sans-serif] text-[14.6px] leading-[22px] font-medium tracking-[0.32px] text-[#ffffff] transition-transform duration-200 hover:-translate-y-px"
               type="button"
               onClick={onStartTryOn}
             >

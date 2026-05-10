@@ -1,6 +1,6 @@
 export function LandingDiscover() {
   return (
-    <section className="bg-white px-[10rem] py-10 max-[920px]:px-4 max-[920px]:py-8">
+    <section className="bg-white px-[8rem] pb-16 pt-10 max-[920px]:px-4 max-[920px]:pb-12 max-[920px]:pt-8">
       <div className="relative overflow-hidden rounded-[18px] bg-[#0d63ab]">
         <img
           src="/landing/discover.jpg"
@@ -17,7 +17,7 @@ export function LandingDiscover() {
             </h2>
             <button
               type="button"
-              className="mt-5 rounded-full bg-white px-5 py-3 font-['Outfit','Poppins',sans-serif] text-[17px] leading-[130%] font-extrabold tracking-[-0.01em] text-[#1E1E1E] transition-transform duration-200 hover:-translate-y-px"
+              className="mt-5 rounded-full bg-[#084D26] px-5 py-3 font-['Outfit','Poppins',sans-serif] text-[17px] leading-[130%] font-extrabold tracking-[-0.01em] text-white transition-transform duration-200 hover:-translate-y-px"
             >
               Shop Sunglasses
             </button>
