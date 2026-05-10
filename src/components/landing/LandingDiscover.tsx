@@ -1,6 +1,6 @@
 export function LandingDiscover() {
   return (
-    <section className="bg-white px-[10rem] py-10 max-[920px]:px-4 max-[920px]:py-8">
+    <section className="bg-white px-[8rem] pb-16 pt-10 max-[920px]:px-4 max-[920px]:pb-12 max-[920px]:pt-8">
       <div className="relative overflow-hidden rounded-[18px] bg-[#0d63ab]">
         <img
           src="/landing/discover.jpg"

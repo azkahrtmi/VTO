@@ -70,7 +70,7 @@ export function LandingCollections() {
   const dragState = useRef({ startX: 0, startScrollLeft: 0 });
   const isResettingRef = useRef(false);
 
-  const getStep = () => (window.innerWidth <= 920 ? 356 : 516);
+  const getStep = () => (window.innerWidth <= 920 ? 356 : 427);
   const getSetWidth = () => getStep() * collections.length;
 
   useEffect(() => {
@@ -164,7 +164,7 @@ export function LandingCollections() {
           {loopedCollections.map((item, index) => (
             <article
               key={`${item.brand}-${item.model}-${index}`}
-              className="w-[500px] flex-none snap-start rounded-[20px] bg-[#f6f5f4] p-5 max-[920px]:w-[340px]"
+              className="w-[411px] flex-none snap-start rounded-[20px] bg-[#f6f5f4] p-[6px] max-[920px]:w-[340px] max-[920px]:p-5"
               style={{
                 transform:
                   currentIndex === index % collections.length
@@ -173,25 +173,25 @@ export function LandingCollections() {
                 opacity: currentIndex === index % collections.length ? 1 : 0.96,
               }}
             >
-              <div className="mb-8 flex items-start justify-between">
+              <div className="mb-6 flex items-start justify-between">
                 <button
                   type="button"
                   aria-label={`Save ${item.model}`}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#30323b] shadow-[0_4px_18px_rgba(0,0,0,0.06)]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#30323b] shadow-[0_4px_18px_rgba(0,0,0,0.06)] max-[920px]:h-10 max-[920px]:w-10"
                 >
-                  <Heart size={20} strokeWidth={1.8} />
+                  <Heart size={16} strokeWidth={1.8} />
                 </button>
 
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#202123] shadow-[0_4px_18px_rgba(0,0,0,0.06)]"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-2 font-['Outfit','Poppins',sans-serif] text-[11px] leading-[100%] font-normal text-[#202123] shadow-[0_4px_18px_rgba(0,0,0,0.06)] max-[920px]:gap-2 max-[920px]:px-5 max-[920px]:py-3 max-[920px]:text-[16px]"
                 >
                   <TryOnIcon />
                   Try on
                 </button>
               </div>
 
-              <div className="mb-10 flex h-[330px] items-center justify-center max-[920px]:h-[220px]">
+              <div className="mb-6 flex h-[255px] items-center justify-center max-[920px]:mb-10 max-[920px]:h-[220px]">
                 <img
                   src={item.image}
                   alt={`${item.brand} ${item.model}`}
@@ -199,26 +199,26 @@ export function LandingCollections() {
                 />
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5 px-[6px] pb-[6px] max-[920px]:space-y-3 max-[920px]:px-0 max-[920px]:pb-0">
                 <div className="flex items-end justify-between gap-3">
-                  <div className="space-y-3">
-                    <h3 className="font-['Outfit','Poppins',sans-serif] text-[24px] leading-[100%] font-semibold text-[#202123]">
+                  <div className="space-y-2">
+                    <h3 className="font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-semibold text-[#202123] max-[920px]:text-[24px]">
                       {item.brand}
                     </h3>
-                    <p className="font-['Outfit','Poppins',sans-serif] text-[28px] leading-[100%] font-normal text-[#202123]">
+                    <p className="font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#202123] max-[920px]:text-[28px]">
                       {item.model}
                     </p>
                   </div>
-                  <p className="pb-1 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-medium text-[#394250]">
+                  <p className="pb-1 font-['Outfit','Poppins',sans-serif] text-[11px] leading-[100%] font-medium text-[#394250] max-[920px]:text-[16px]">
                     {item.price}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2.5 max-[920px]:gap-4">
                   {item.colors.map((color, swatchIndex) => (
                     <span
                       key={`${item.model}-${color}`}
-                      className={`block h-7 w-7 rounded-full border ${swatchIndex === 0 ? "border-[#202123]" : "border-transparent"}`}
+                      className={`block h-5 w-5 rounded-full border ${swatchIndex === 0 ? "border-[#202123]" : "border-transparent"} max-[920px]:h-7 max-[920px]:w-7`}
                       style={{ background: color }}
                     />
                   ))}

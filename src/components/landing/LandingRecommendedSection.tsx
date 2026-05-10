@@ -60,36 +60,35 @@ function TryOnIcon() {
 export function LandingRecommendedSection() {
   return (
     <section className="bg-white px-[6.8rem] py-14 max-[920px]:px-4 max-[920px]:py-10">
-
-      <div className="mb-10 flex items-center justify-between gap-6 max-[720px]:flex-col max-[720px]:items-start">
-        <h2 className="font-['Outfit','Poppins',sans-serif] text-[58px] leading-[1.02] font-medium tracking-[-0.04em] text-[#1d1f23] max-[920px]:text-[38px]">
+      <div className="mb-4 flex min-h-[56px] items-center justify-between gap-6 max-[720px]:flex-col max-[720px]:items-start">
+        <h2 className="min-h-[56px] max-w-[504px] font-['Outfit','Poppins',sans-serif] text-[18px] leading-[56px] font-medium tracking-[0] text-[#1d1f23] max-[920px]:min-h-0 max-[920px]:text-[30px] max-[920px]:leading-[1.1]">
           Recommended for Progressive Lenses
         </h2>
         <button
           type="button"
-          className="rounded-full border border-[#084D26] px-8 py-4 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#084D26]"
+          className="flex h-[30px] items-center rounded-full border border-[#84a98b] px-4 font-['Outfit','Poppins',sans-serif] text-[12px] leading-[1] font-medium text-[#084D26]"
         >
           Shop all
         </button>
       </div>
 
-      <div className="overflow-x-auto pb-2 scrollbar-hide">
+      <div className="-mr-[6.8rem] overflow-x-auto pb-2 pr-[6.8rem] scrollbar-hide max-[920px]:-mr-0 max-[920px]:pr-0">
         <div className="flex min-w-max gap-4">
           {recommendationCards.map((item, index) => (
             <article
               key={`${item.brand}-${item.model}-${index}`}
-              className="w-[500px] flex-none rounded-[20px] bg-[#f6f5f4] p-5 max-[920px]:w-[340px]"
+              className="w-[411px] flex-none rounded-[20px] bg-[#f6f5f4] p-[6px] max-[920px]:w-[340px] max-[920px]:p-5"
             >
-              <div className="mb-8 flex items-start justify-between">
+              <div className="mb-6 flex items-start justify-between">
                 <button
                   type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#30323b] shadow-[0_4px_18px_rgba(0,0,0,0.06)]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#30323b] shadow-[0_4px_18px_rgba(0,0,0,0.06)] max-[920px]:h-10 max-[920px]:w-10"
                 >
                   <span className="text-lg">♡</span>
                 </button>
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal text-[#202123] shadow-[0_4px_18px_rgba(0,0,0,0.06)] [&>span]:hidden"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-2 font-['Outfit','Poppins',sans-serif] text-[11px] leading-[100%] font-normal text-[#202123] shadow-[0_4px_18px_rgba(0,0,0,0.06)] [&>span]:hidden max-[920px]:gap-2 max-[920px]:px-5 max-[920px]:py-3 max-[920px]:text-[16px]"
                 >
                   <span className="text-lg">⌘</span>
                   <TryOnIcon />
@@ -97,7 +96,7 @@ export function LandingRecommendedSection() {
                 </button>
               </div>
 
-              <div className="mb-10 flex h-[330px] items-center justify-center rounded-[18px] bg-[radial-gradient(circle_at_center,#ffffff_0%,#f5f4f1_70%)] px-5 max-[920px]:h-[220px]">
+              <div className="mb-6 flex h-[255px] items-center justify-center rounded-[18px] bg-[radial-gradient(circle_at_center,#ffffff_0%,#f5f4f1_70%)] px-5 max-[920px]:mb-10 max-[920px]:h-[220px]">
                 <img
                   src={item.image}
                   alt={`${item.brand} ${item.model}`}
