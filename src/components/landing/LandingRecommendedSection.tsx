@@ -1,3 +1,6 @@
+import { useEffect, useRef } from "react";
+import { useDraggableScroll } from "../../utils/useDraggableScroll";
+
 const recommendationCards = [
   {
     brand: "Versace",
@@ -57,7 +60,54 @@ function TryOnIcon() {
   );
 }
 
+const loopedCards = [
+  ...recommendationCards,
+  ...recommendationCards,
+  ...recommendationCards,
+];
+
 export function LandingRecommendedSection() {
+  const { ref, ...dragEvents } = useDraggableScroll();
+  const isResettingRef = useRef(false);
+
+  const getStep = () => (window.innerWidth <= 920 ? 356 : 427);
+  const getSetWidth = () => getStep() * recommendationCards.length;
+
+  useEffect(() => {
+    const track = ref.current;
+    if (!track) return;
+
+    const resetToMiddle = () => {
+      track.scrollLeft = getSetWidth();
+    };
+
+    resetToMiddle();
+    window.addEventListener("resize", resetToMiddle);
+    return () => window.removeEventListener("resize", resetToMiddle);
+  }, []);
+
+  const handleScroll = () => {
+    const track = ref.current;
+    if (!track) return;
+    const setWidth = getSetWidth();
+
+    if (!isResettingRef.current) {
+      if (track.scrollLeft <= setWidth * 0.5) {
+        isResettingRef.current = true;
+        track.scrollLeft += setWidth;
+        requestAnimationFrame(() => {
+          isResettingRef.current = false;
+        });
+      } else if (track.scrollLeft >= setWidth * 1.5) {
+        isResettingRef.current = true;
+        track.scrollLeft -= setWidth;
+        requestAnimationFrame(() => {
+          isResettingRef.current = false;
+        });
+      }
+    }
+  };
+
   return (
     <section className="bg-white px-[6.8rem] py-14 max-[920px]:px-4 max-[920px]:py-10">
       <div className="mb-4 flex min-h-[56px] items-center justify-between gap-6 max-[720px]:flex-col max-[720px]:items-start">
@@ -72,9 +122,14 @@ export function LandingRecommendedSection() {
         </button>
       </div>
 
-      <div className="-mr-[6.8rem] overflow-x-auto pb-2 pr-[6.8rem] scrollbar-hide max-[920px]:-mr-0 max-[920px]:pr-0">
+      <div
+        ref={ref}
+        {...dragEvents}
+        onScroll={handleScroll}
+        className="-mr-[6.8rem] overflow-x-auto pb-2 pr-[6.8rem] scrollbar-hide max-[920px]:-mr-0 max-[920px]:pr-0 cursor-grab active:cursor-grabbing select-none"
+      >
         <div className="flex min-w-max gap-4">
-          {recommendationCards.map((item, index) => (
+          {loopedCards.map((item, index) => (
             <article
               key={`${item.brand}-${item.model}-${index}`}
               className="w-[411px] flex-none rounded-[20px] bg-[#f6f5f4] p-[6px] max-[920px]:w-[340px] max-[920px]:p-5"

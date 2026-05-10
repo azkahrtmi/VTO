@@ -229,11 +229,11 @@ export function LandingCollections() {
         </div>
       </div>
 
-      <div className="mt-8 flex items-center justify-center">
+      {/* <div className="mt-8 flex items-center justify-center">
         <div className="rounded-[16px] bg-[#8d8d8d] px-4 py-3 font-['Outfit','Poppins',sans-serif] text-[18px] leading-[100%] font-medium text-white">
           {currentIndex + 1}/{collections.length}
         </div>
-      </div>
+      </div> */}
     </section>
   );
 }

@@ -47,14 +47,14 @@ const footerColumns = [
 export function LandingFooter() {
   return (
     <footer className="bg-[#f5f5f5] px-[3.8rem] pb-14 pt-12 text-[#1b1d21] max-[920px]:px-4 max-[920px]:py-10">
-      <div className="grid grid-cols-[1.15fr_1.15fr_1.15fr_1fr_1.9fr] gap-10 max-[1280px]:grid-cols-4 max-[1280px]:gap-8 max-[920px]:grid-cols-2 max-[560px]:grid-cols-1">
+      <div className="grid grid-cols-[1.15fr_1.15fr_1.15fr_1fr_1.9fr] gap-10 max-[1280px]:grid-cols-4 max-[1280px]:gap-8 max-[920px]:grid-cols-2 max-[920px]:gap-y-12">
         {footerColumns.map((column) => (
-          <div key={column.title} className="space-y-7">
-            <div className="space-y-5">
+          <div key={column.title} className="space-y-7 max-[920px]:space-y-6">
+            <div className="space-y-5 max-[920px]:space-y-4">
               <h3 className="font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-semibold text-[#0d6d3d]">
                 {column.title}
               </h3>
-              <ul className="space-y-7">
+              <ul className="space-y-7 max-[920px]:space-y-4">
                 {column.items.map((item) => (
                   <li
                     key={item}
@@ -69,11 +69,11 @@ export function LandingFooter() {
             </div>
 
             {column.secondaryTitle && column.secondaryItems && (
-              <div className="space-y-5">
+              <div className="space-y-5 max-[920px]:space-y-4">
                 <h3 className="font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-semibold text-[#0d6d3d]">
                   {column.secondaryTitle}
                 </h3>
-                <ul className="space-y-7">
+                <ul className="space-y-7 max-[920px]:space-y-4">
                   {column.secondaryItems.map((item) => (
                     <li
                       key={item}
@@ -90,14 +90,14 @@ export function LandingFooter() {
           </div>
         ))}
 
-        <div className="flex min-h-full flex-col justify-between gap-10 max-[1280px]:col-span-4 max-[920px]:col-span-2 max-[560px]:col-span-1">
-          <div className="space-y-10">
+        <div className="flex min-h-full flex-col justify-between gap-10 max-[1280px]:col-span-4 max-[920px]:col-span-2">
+          <div className="space-y-10 max-[920px]:space-y-6">
             <img
               className="w-[180px] object-contain"
               src="/landing/logo.png"
               alt="Optik Tunggal"
             />
-            <p className="max-w-[520px] font-['Outfit','Poppins',sans-serif] text-[22px] leading-[1.75] font-normal text-[#202226]">
+            <p className="max-w-[520px] font-['Outfit','Poppins',sans-serif] text-[22px] leading-[1.75] font-normal text-[#202226] max-[920px]:text-[18px]">
               Try on our full assortment of frames, get styled by a friendly
               advisor, and receive an eye exam from an expert optometrist.
             </p>
