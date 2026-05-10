@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
 import { GLASSES_CATALOG } from '../catalog/glasses';
-
+import './smooth-follow.js'; // Import custom smooth-tracking logic
 
 export const MindARVTO = () => {
   const sceneRef = useRef<any>(null);
@@ -47,7 +47,7 @@ export const MindARVTO = () => {
     <div className="mindar-container">
       <a-scene 
         ref={sceneRef} 
-        mindar-face="uiScanning: #scanning-overlay; uiError: yes; uiLoading: yes; filterMinCF: 0.01; filterBeta: 100" 
+        mindar-face="uiScanning: #scanning-overlay; uiError: yes; uiLoading: yes; filterMinCF: 0.1; filterBeta: 10" 
         embedded 
         color-space="sRGB" 
         renderer="colorManagement: true, physicallyCorrectLights" 
@@ -71,18 +71,20 @@ export const MindARVTO = () => {
           ></a-gltf-model>
         </a-entity>
 
-        {/* --- KACAMATA --- */}
-        <a-entity mindar-face-target="anchorIndex: 168">
-          {selectedGlasses && (
+        {/* --- INVISIBLE ANCHOR & SMOOTH FOLLOW KACAMATA --- */}
+        <a-entity id="face-anchor" mindar-face-target="anchorIndex: 168" visible="false"></a-entity>
+        
+        {selectedGlasses && (
+          <a-entity smooth-follow="target: #face-anchor; positionDeadZone: 0.0003; rotationDeadZone: 0.002; minAlpha: 0.05; maxAlpha: 0.8; velocityThreshold: 0.03">
             <a-gltf-model 
               key={modelSrc}
               src={modelSrc}
               position="0 0 -0.1"  
               rotation="0 0 0" 
-              scale="6.5 6.5 6.5" 
+              scale="6 6 6" 
             ></a-gltf-model>
-          )}
-        </a-entity>
+          </a-entity>
+        )}
       </a-scene>
 
       <div id="scanning-overlay" style={{ display: 'none' }}></div>
