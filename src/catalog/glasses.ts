@@ -21,5 +21,19 @@ export const GLASSES_CATALOG: Glasses[] = [
     sku: '/coba3.glb',
     color: '#3357FF',
     type: 'local'
+  },
+  {
+    id: 'coba4',
+    name: 'Model Coba 4',
+    sku: '/coba4.glb',
+    color: '#FF33E9',
+    type: 'local'
+  },
+  {
+    id: 'ot-data',
+    name: 'Model Optik Tunggal',
+    sku: '/datadariOT.glb',
+    color: '#000000',
+    type: 'local'
   }
 ];
