@@ -9,21 +9,27 @@ import { LandingTopBar } from './LandingTopBar';
 
 type LandingPageProps = {
   onStartTryOn: () => void;
+  onNavigateShop?: () => void;
+  onNavigateHome?: () => void;
 };
 
-export function LandingPage({ onStartTryOn }: LandingPageProps) {
+export function LandingPage({
+  onStartTryOn,
+  onNavigateShop,
+  onNavigateHome,
+}: LandingPageProps) {
   return (
     <div className="min-h-screen bg-white">
       <div className="overflow-hidden bg-white">
-        <LandingTopBar />
+        <LandingTopBar onNavigateHome={onNavigateHome} />
         <div className="relative">
-          <LandingNavbar />
-          <LandingHero onStartTryOn={onStartTryOn} />
+          <LandingNavbar onNavigateHome={onNavigateHome} onNavigateShop={onNavigateShop} />
+          <LandingHero onStartTryOn={onStartTryOn} onNavigateShop={onNavigateShop} />
           <LandingHighlights />
         </div>
         <LandingCollections />
         <LandingExtendedSections />
-        <LandingDiscover />
+        <LandingDiscover onNavigateShop={onNavigateShop} />
         <LandingFooter />
       </div>
     </div>

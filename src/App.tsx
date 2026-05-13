@@ -1,17 +1,47 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RefreshCw, X } from 'lucide-react';
 import { MindARVTO } from './components/MindARVTO';
 import { LandingPage } from './components/landing/LandingPage';
+import { EyeglassesPage } from './components/eyeglasses/EyeglassesPage';
 import { useAppStore } from './store';
 import { GLASSES_CATALOG } from './catalog/glasses';
+
+type AppPage = 'landing' | 'eyeglasses';
+
+const getCurrentPage = (): AppPage =>
+  window.location.pathname.startsWith('/eyeglasses') ? 'eyeglasses' : 'landing';
 
 function App() {
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState<AppPage>(getCurrentPage);
 
   const { 
     selectedGlassesId, setSelectedGlassesId
   } = useAppStore();
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPage(getCurrentPage());
+      setStarted(false);
+      setLoading(false);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (page: AppPage) => {
+    const nextPath = page === 'eyeglasses' ? '/eyeglasses' : '/';
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath);
+    }
+
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    setCurrentPage(page);
+    setStarted(false);
+    setLoading(false);
+  };
 
   const handleStart = async () => {
     setLoading(true);
@@ -28,9 +58,19 @@ function App() {
 
   return (
     <div className="vto-app">
-      {/* Landing Page (always behind) */}
-      {!started && !loading && (
-        <LandingPage onStartTryOn={handleStart} />
+      {!started && !loading && currentPage === 'landing' && (
+        <LandingPage
+          onStartTryOn={handleStart}
+          onNavigateShop={() => navigateTo('eyeglasses')}
+          onNavigateHome={() => navigateTo('landing')}
+        />
+      )}
+
+      {!started && !loading && currentPage === 'eyeglasses' && (
+        <EyeglassesPage
+          onNavigateHome={() => navigateTo('landing')}
+          onNavigateShop={() => navigateTo('eyeglasses')}
+        />
       )}
 
       {loading && (

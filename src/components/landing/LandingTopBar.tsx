@@ -1,11 +1,25 @@
-export function LandingTopBar() {
+type LandingTopBarProps = {
+  onNavigateHome?: () => void;
+};
+
+export function LandingTopBar({ onNavigateHome }: LandingTopBarProps) {
   return (
     <div className="flex w-full items-center justify-between gap-4 bg-white px-[3.8rem] py-[0.78rem] text-[#1d2427] max-[920px]:bg-[#f8f5f1] max-[920px]:px-4 max-[920px]:py-2.5">
-      <img
-        className="w-[138px] object-contain max-[920px]:w-[90px]"
-        src="/landing/logo.png"
-        alt="Optik Tunggal"
-      />
+      <a
+        href="/"
+        onClick={(event) => {
+          if (onNavigateHome) {
+            event.preventDefault();
+            onNavigateHome();
+          }
+        }}
+      >
+        <img
+          className="w-[138px] object-contain max-[920px]:w-[90px]"
+          src="/landing/logo.png"
+          alt="Optik Tunggal"
+        />
+      </a>
       <div className="flex items-center gap-2 max-[920px]:justify-end">
         <img
           className="h-[14px] w-[14px] object-contain min-[921px]:hidden"

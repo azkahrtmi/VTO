@@ -3,52 +3,118 @@ import { Menu, X as CloseIcon, Search, Heart, ShoppingCart } from 'lucide-react'
 
 const navItems = ['Eyeglasses', 'Sunglasses', 'Brand', 'Store', 'News', 'About'];
 
-export function LandingNavbar() {
+type LandingNavbarProps = {
+  theme?: 'overlay' | 'solid';
+  activeItem?: string;
+  onNavigateHome?: () => void;
+  onNavigateShop?: () => void;
+};
+
+export function LandingNavbar({
+  theme = 'overlay',
+  activeItem,
+  onNavigateHome,
+  onNavigateShop,
+}: LandingNavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isSolid = theme === 'solid';
+
+  const handleNavClick = (item: string) => {
+    setMobileMenuOpen(false);
+
+    if (item === 'Eyeglasses') {
+      onNavigateShop?.();
+      return;
+    }
+
+    if (item === 'Store') {
+      onNavigateHome?.();
+    }
+  };
+
+  const navTextClass = isSolid ? 'text-[#1d2427]' : 'text-[#ffffff]';
+  const actionTextClass = isSolid
+    ? 'text-[#1d2427]'
+    : 'text-[#1d2427] min-[921px]:text-white';
+  const signInClass = isSolid
+    ? 'border-[#1d2427]/20 bg-[#1d2427]/5 text-[#1d2427]'
+    : 'border-[rgba(255,255,255,0.78)] bg-[rgba(255,255,255,0.08)] text-[#f7f1e8] max-[920px]:border-[#1d2427]/20 max-[920px]:bg-[#1d2427]/5 max-[920px]:text-[#1d2427]';
 
   return (
-    <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-between gap-4 px-[3.8rem] py-5 max-[920px]:relative max-[920px]:bg-[#f8f5f1] max-[920px]:px-4 max-[920px]:py-3">
+    <div
+      className={`z-30 flex items-center justify-between gap-4 px-[3.8rem] py-5 max-[920px]:relative max-[920px]:bg-[#f8f5f1] max-[920px]:px-4 max-[920px]:py-3 ${
+        isSolid ? 'relative' : 'absolute inset-x-0 top-0'
+      }`}
+    >
       {/* Mobile Menu Toggle */}
-      <button 
-        className="p-1 min-[921px]:hidden text-[#1d2427]" 
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+      <button
+        className="p-1 min-[921px]:hidden text-[#1d2427]"
+        onClick={() => setMobileMenuOpen((prev) => !prev)}
         aria-label="Toggle menu"
+        type="button"
       >
         {mobileMenuOpen ? <CloseIcon size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Desktop Navigation */}
       <nav
         className="hidden h-5 w-[471px] items-center gap-[30px] min-[921px]:flex"
         aria-label="Primary"
       >
-        {navItems.map((item) => (
-          <a
-            key={item}
-            href="#"
-            className="font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal tracking-[0] text-[#ffffff] no-underline transition-opacity duration-200 hover:opacity-80"
-          >
-            {item}
-          </a>
-        ))}
+        {navItems.map((item) => {
+          const isActive = item === activeItem;
+
+          return (
+            <button
+              key={item}
+              type="button"
+              onClick={() => handleNavClick(item)}
+              className={`font-['Outfit','Poppins',sans-serif] text-[16px] leading-[100%] font-normal tracking-[0] no-underline transition-opacity duration-200 hover:opacity-80 ${
+                isActive ? 'font-medium underline underline-offset-[10px]' : ''
+              } ${navTextClass}`}
+            >
+              {item}
+            </button>
+          );
+        })}
       </nav>
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 bg-[#1a1a2e] p-6 min-[921px]:hidden flex flex-col gap-6 animate-[fade-in_0.3s_ease]">
-          <div className="flex justify-between items-center border-bottom border-white/10 pb-4">
-            <img className="w-[100px] invert" src="/landing/logo.png" alt="Optik Tunggal" />
-            <button onClick={() => setMobileMenuOpen(false)} className="text-white"><CloseIcon size={28} /></button>
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onNavigateHome?.();
+              }}
+            >
+              <img className="w-[100px] invert" src="/landing/logo.png" alt="Optik Tunggal" />
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-white"
+              type="button"
+            >
+              <CloseIcon size={28} />
+            </button>
           </div>
           {navItems.map((item) => (
-            <a key={item} href="#" className="text-xl font-medium text-white border-b border-white/5 pb-2">{item}</a>
+            <button
+              key={item}
+              type="button"
+              onClick={() => handleNavClick(item)}
+              className="border-b border-white/5 pb-2 text-left text-xl font-medium text-white"
+            >
+              {item}
+            </button>
           ))}
         </div>
       )}
 
       <div className="flex items-center gap-[0.75rem] max-[920px]:gap-2">
         <button
-          className="inline-flex min-h-[38px] items-center gap-2 rounded-full border border-[rgba(255,255,255,0.78)] bg-[rgba(255,255,255,0.08)] px-4 py-1.5 text-[0.88rem] text-[#f7f1e8] transition-transform duration-200 hover:-translate-y-px max-[920px]:border-[#1d2427]/20 max-[920px]:bg-[#1d2427]/5 max-[920px]:text-[#1d2427]"
+          className={`inline-flex min-h-[38px] items-center gap-2 rounded-full border px-4 py-1.5 text-[0.88rem] transition-transform duration-200 hover:-translate-y-px ${signInClass}`}
           type="button"
         >
           <span className="max-[400px]:hidden">Sign in</span>
@@ -57,9 +123,19 @@ export function LandingNavbar() {
           </svg>
         </button>
         <div className="flex items-center">
-          <button className="h-9 w-9 text-[#1d2427] min-[921px]:text-white flex items-center justify-center"><Search size={18} /></button>
-          <button className="h-9 w-9 text-[#1d2427] min-[921px]:text-white flex items-center justify-center max-[480px]:hidden"><Heart size={18} /></button>
-          <button className="h-9 w-9 text-[#1d2427] min-[921px]:text-white flex items-center justify-center relative">
+          <button className={`flex h-9 w-9 items-center justify-center ${actionTextClass}`} type="button">
+            <Search size={18} />
+          </button>
+          <button
+            className={`flex h-9 w-9 items-center justify-center max-[480px]:hidden ${actionTextClass}`}
+            type="button"
+          >
+            <Heart size={18} />
+          </button>
+          <button
+            className={`relative flex h-9 w-9 items-center justify-center ${actionTextClass}`}
+            type="button"
+          >
             <ShoppingCart size={18} />
             <span className="absolute right-[6px] top-[8px] h-[7px] w-[7px] rounded-full bg-[#f72c3a]" />
           </button>

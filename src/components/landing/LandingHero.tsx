@@ -1,8 +1,9 @@
 type LandingHeroProps = {
   onStartTryOn: () => void;
+  onNavigateShop?: () => void;
 };
 
-export function LandingHero({ onStartTryOn }: LandingHeroProps) {
+export function LandingHero({ onStartTryOn, onNavigateShop }: LandingHeroProps) {
   return (
     <section
       className="relative min-h-[calc(100vh-112px)] bg-cover bg-no-repeat max-[920px]:min-h-[520px] max-[920px]:max-h-[70vh]"
@@ -33,6 +34,7 @@ export function LandingHero({ onStartTryOn }: LandingHeroProps) {
             <button
               className="min-h-[44px] rounded-full border border-[rgba(255,255,255,0.4)] bg-[rgba(255,255,255,0.1)] px-8 py-2.5 text-[15px] font-medium text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20 active:scale-95"
               type="button"
+              onClick={onNavigateShop}
             >
               Shop Sunglasses
             </button>
