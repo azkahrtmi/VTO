@@ -10,11 +10,13 @@ import { EyeglassesToolbar } from './EyeglassesToolbar';
 type EyeglassesPageProps = {
   onNavigateHome: () => void;
   onNavigateShop: () => void;
+  onSignIn?: () => void;
 };
 
 export function EyeglassesPage({
   onNavigateHome,
   onNavigateShop,
+  onSignIn,
 }: EyeglassesPageProps) {
   const [filtersVisible, setFiltersVisible] = useState(true);
 
@@ -27,6 +29,7 @@ export function EyeglassesPage({
           activeItem="Eyeglasses"
           onNavigateHome={onNavigateHome}
           onNavigateShop={onNavigateShop}
+          onSignIn={onSignIn}
         />
       </div>
 

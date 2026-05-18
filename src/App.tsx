@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { RefreshCw, X } from 'lucide-react';
 import { MindARVTO } from './components/MindARVTO';
 import { LandingPage } from './components/landing/LandingPage';
+import { LoginModal } from './components/landing/LoginModal';
 import { EyeglassesPage } from './components/eyeglasses/EyeglassesPage';
 import { useAppStore } from './store';
 import { GLASSES_CATALOG } from './catalog/glasses';
@@ -15,6 +16,7 @@ function App() {
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState<AppPage>(getCurrentPage);
+  const [loginOpen, setLoginOpen] = useState(false);
 
   const { 
     selectedGlassesId, setSelectedGlassesId
@@ -25,6 +27,7 @@ function App() {
       setCurrentPage(getCurrentPage());
       setStarted(false);
       setLoading(false);
+      setLoginOpen(false);
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -63,6 +66,7 @@ function App() {
           onStartTryOn={handleStart}
           onNavigateShop={() => navigateTo('eyeglasses')}
           onNavigateHome={() => navigateTo('landing')}
+          onSignIn={() => setLoginOpen(true)}
         />
       )}
 
@@ -70,8 +74,11 @@ function App() {
         <EyeglassesPage
           onNavigateHome={() => navigateTo('landing')}
           onNavigateShop={() => navigateTo('eyeglasses')}
+          onSignIn={() => setLoginOpen(true)}
         />
       )}
+
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
 
       {loading && (
         <div className="loading-screen">

@@ -8,6 +8,7 @@ type LandingNavbarProps = {
   activeItem?: string;
   onNavigateHome?: () => void;
   onNavigateShop?: () => void;
+  onSignIn?: () => void;
 };
 
 export function LandingNavbar({
@@ -15,6 +16,7 @@ export function LandingNavbar({
   activeItem,
   onNavigateHome,
   onNavigateShop,
+  onSignIn,
 }: LandingNavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isSolid = theme === 'solid';
@@ -116,6 +118,7 @@ export function LandingNavbar({
         <button
           className={`inline-flex min-h-[38px] items-center gap-2 rounded-full border px-4 py-1.5 text-[0.88rem] transition-transform duration-200 hover:-translate-y-px ${signInClass}`}
           type="button"
+          onClick={onSignIn}
         >
           <span className="max-[400px]:hidden">Sign in</span>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
