@@ -215,6 +215,193 @@ img {
   display: none;
 }
 
+.login-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(245, 246, 244, 0.64);
+  backdrop-filter: blur(6px);
+}
+
+.login-modal {
+  position: relative;
+  width: min(92vw, 470px);
+  overflow: visible;
+  border: 0;
+  border-radius: 24px;
+  background: #ffffff;
+  color: #123b32;
+  box-shadow: 0 24px 70px rgba(10, 31, 27, 0.18);
+  font-family: 'Outfit', 'Poppins', sans-serif;
+}
+
+.login-modal-overlay.is-opening {
+  animation: loginOverlayIn 180ms ease-out forwards;
+}
+
+.login-modal-overlay.is-opening .login-modal {
+  animation: loginModalIn 200ms ease-out forwards;
+}
+
+.login-modal-overlay.is-closing {
+  animation: loginOverlayOut 160ms ease-in forwards;
+}
+
+.login-modal-overlay.is-closing .login-modal {
+  animation: loginModalOut 160ms ease-in forwards;
+}
+
+.login-modal-close {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  z-index: 2;
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #09372c;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #09372c;
+  cursor: pointer;
+}
+
+.login-modal-hero {
+  position: relative;
+  height: 278px;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  background: #163329;
+}
+
+.login-modal-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+}
+
+.login-modal-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(7, 22, 18, 0.58), rgba(7, 22, 18, 0.1));
+}
+
+.login-modal-hero-copy {
+  position: absolute;
+  left: 32px;
+  bottom: 38px;
+  z-index: 1;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.login-modal-hero-copy p {
+  margin: 0;
+}
+
+.login-modal-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+
+.login-modal-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.login-modal-dots span:first-child {
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.login-modal-content {
+  padding: 26px 32px 28px;
+}
+
+.login-modal-content h2 {
+  margin: 0 0 8px;
+  color: #09372c;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.login-modal-content p {
+  margin: 0;
+  max-width: 520px;
+  color: #1d2427;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.login-modal-form {
+  margin-top: 22px;
+}
+
+.login-modal-phone {
+  display: flex;
+  min-height: 46px;
+  overflow: hidden;
+  border: 1px solid #2d5a50;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.login-modal-phone span {
+  display: flex;
+  width: 92px;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #2d5a50;
+  color: #1d2427;
+  font-size: 14px;
+}
+
+.login-modal-phone input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  padding: 0 22px;
+  color: #1d2427;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.login-modal-phone input::placeholder {
+  color: #8b9692;
+}
+
+.login-modal-form button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #075c2a;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -222,6 +409,50 @@ img {
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes loginOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loginOverlayOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes loginModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes loginModalOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
   }
 }
 
