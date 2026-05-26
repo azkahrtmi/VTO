@@ -13,6 +13,10 @@ export const DeepARVTO = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Customization States
+  const [size, setSize] = useState<'Medium' | 'Large'>('Medium');
+  const [pdScale, setPdScale] = useState(1.0);
+
   const { selectedGlassesId } = useAppStore();
   const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
 
@@ -75,6 +79,9 @@ export const DeepARVTO = () => {
       const switchEffect = async () => {
         try {
           await deepARRef.current.switchEffect(selectedGlasses.deeparEffect);
+          // Reset customization when switching glasses
+          setSize('Medium');
+          setPdScale(1.0);
         } catch (err) {
           console.error('DeepAR switchEffect error:', err);
         }
@@ -83,9 +90,111 @@ export const DeepARVTO = () => {
     }
   }, [selectedGlassesId, selectedGlasses]);
 
+  // Handlers for DeepAR Control
+  const handleFrameColor = async (r: number, g: number, b: number) => {
+    if (!deepARRef.current) return;
+    try {
+      await deepARRef.current.changeParameterVector('Plastic', 'MeshRenderer', 'u_color', r, g, b, 1.0);
+    } catch (e) {
+      console.error('Error changing frame color', e);
+    }
+  };
+
+  const handleLensColor = async (r: number, g: number, b: number, a: number) => {
+    if (!deepARRef.current) return;
+    try {
+      await deepARRef.current.changeParameterVector('LensesMultiply', 'MeshRenderer', 'u_color', r, g, b, a);
+      await deepARRef.current.changeParameterVector('LensesAdd', 'MeshRenderer', 'u_color', r, g, b, a);
+    } catch (e) {
+      console.error('Error changing lens color', e);
+    }
+  };
+
+  const updateScale = async (currentSize: 'Medium' | 'Large', currentPd: number) => {
+    if (!deepARRef.current) return;
+    const baseScale = currentSize === 'Large' ? 1.1 : 1.0;
+    try {
+      // Scale X depends on PD, while Y and Z remain proportional to the base size
+      await deepARRef.current.changeParameterVector('RayBanLow', '', 'scale', baseScale * currentPd, baseScale, baseScale, 0);
+    } catch (e) {
+      console.error('Error changing node scale', e);
+    }
+  };
+
+  const handleSizeChange = (newSize: 'Medium' | 'Large') => {
+    setSize(newSize);
+    updateScale(newSize, pdScale);
+  };
+
+  const handlePdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPd = parseFloat(e.target.value);
+    setPdScale(newPd);
+    updateScale(size, newPd);
+  };
+
   return (
     <div className="deepar-wrapper">
       <div ref={containerRef} className="deepar-container" />
+
+      {/* UI Controls Overlay */}
+      {!isLoading && !error && (
+        <div className="deepar-controls-overlay">
+          
+          <div className="control-group">
+            <span className="control-label">Frame Color:</span>
+            <div className="color-buttons">
+              <button onClick={() => handleFrameColor(0, 0, 0)} className="color-btn" style={{ background: '#000' }} />
+              <button onClick={() => handleFrameColor(0.8, 0.1, 0.1)} className="color-btn" style={{ background: '#cc1919' }} />
+              <button onClick={() => handleFrameColor(0.1, 0.3, 0.8)} className="color-btn" style={{ background: '#194ccc' }} />
+              <button onClick={() => handleFrameColor(0.8, 0.8, 0.8)} className="color-btn" style={{ background: '#ccc' }} />
+            </div>
+          </div>
+
+          <div className="control-group">
+            <span className="control-label">Lens Color:</span>
+            <div className="color-buttons">
+              <button onClick={() => handleLensColor(0, 0, 0, 0.6)} className="color-btn" style={{ background: 'rgba(0,0,0,0.6)' }} />
+              <button onClick={() => handleLensColor(0.8, 0.8, 0.1, 0.4)} className="color-btn" style={{ background: 'rgba(204,204,25,0.4)' }} />
+              <button onClick={() => handleLensColor(0.1, 0.5, 0.8, 0.4)} className="color-btn" style={{ background: 'rgba(25,127,204,0.4)' }} />
+              <button onClick={() => handleLensColor(1, 1, 1, 0.1)} className="color-btn" style={{ background: 'rgba(255,255,255,0.8)' }}>Clear</button>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <span className="control-label">Size:</span>
+            <div className="radio-group">
+              <label>
+                <input 
+                  type="radio" 
+                  checked={size === 'Medium'} 
+                  onChange={() => handleSizeChange('Medium')} 
+                /> Medium
+              </label>
+              <label>
+                <input 
+                  type="radio" 
+                  checked={size === 'Large'} 
+                  onChange={() => handleSizeChange('Large')} 
+                /> Large
+              </label>
+            </div>
+          </div>
+
+          <div className="control-group">
+            <span className="control-label">PD (Pupillary Distance): {pdScale.toFixed(2)}x</span>
+            <input 
+              type="range" 
+              min="0.8" 
+              max="1.2" 
+              step="0.05" 
+              value={pdScale} 
+              onChange={handlePdChange}
+              className="pd-slider"
+            />
+          </div>
+
+        </div>
+      )}
 
       {isLoading && (
         <div className="deepar-loading">
@@ -124,6 +233,72 @@ export const DeepARVTO = () => {
           height: 100% !important;
           object-fit: cover !important;
         }
+        
+        /* UI Controls Customization */
+        .deepar-controls-overlay {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          background: rgba(15, 23, 42, 0.85);
+          backdrop-filter: blur(8px);
+          padding: 16px;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: white;
+          z-index: 20;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          width: 280px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .control-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .control-label {
+          font-size: 0.85rem;
+          color: #cbd5e1;
+          font-weight: 500;
+        }
+        .color-buttons {
+          display: flex;
+          gap: 8px;
+        }
+        .color-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: 2px solid rgba(255,255,255,0.8);
+          cursor: pointer;
+          transition: transform 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.6rem;
+          color: black;
+          font-weight: bold;
+        }
+        .color-btn:hover {
+          transform: scale(1.1);
+        }
+        .radio-group {
+          display: flex;
+          gap: 16px;
+          font-size: 0.9rem;
+        }
+        .radio-group label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          cursor: pointer;
+        }
+        .pd-slider {
+          width: 100%;
+          accent-color: #8b5cf6;
+        }
+
         .deepar-loading {
           position: absolute;
           inset: 0;
