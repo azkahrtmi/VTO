@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from 'react';
 import * as deepar from 'deepar';
 import { useAppStore } from '../store';
-import { GLASSES_CATALOG } from '../catalog/glasses';
+import { DEFAULT_NODE_MAPPING } from '../types/glasses';
+import type { NodeMapping } from '../types/glasses';
 
 const LICENSE_KEY = import.meta.env.VITE_DEEPAR_LICENSE_KEY || '';
 
@@ -16,9 +17,14 @@ export const DeepARVTO = () => {
   // Customization States
   const [size, setSize] = useState<'Medium' | 'Large'>('Medium');
   const [pdScale, setPdScale] = useState(1.0);
+  const [activeFrameColor, setActiveFrameColor] = useState<string | null>(null);
+  const [activeLensColor, setActiveLensColor] = useState<string | null>(null);
 
-  const { selectedGlassesId } = useAppStore();
-  const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
+  const { selectedGlassesId, glassesCatalog } = useAppStore();
+  const selectedGlasses = glassesCatalog.find(g => g.id === selectedGlassesId);
+
+  // Resolve node mapping: use model-specific mapping, or fall back to defaults
+  const nodeMapping: NodeMapping = selectedGlasses?.nodeMapping || DEFAULT_NODE_MAPPING;
 
   // Initialize DeepAR
   useEffect(() => {
@@ -33,7 +39,7 @@ export const DeepARVTO = () => {
         // Find default DeepAR effect to load
         const defaultEffect = selectedGlasses?.engine === 'deepar' 
           ? selectedGlasses.deeparEffect 
-          : GLASSES_CATALOG.find(g => g.engine === 'deepar')?.deeparEffect;
+          : glassesCatalog.find(g => g.engine === 'deepar')?.deeparEffect;
 
         const instance = await deepar.initialize({
           licenseKey: LICENSE_KEY,
@@ -82,6 +88,8 @@ export const DeepARVTO = () => {
           // Reset customization when switching glasses
           setSize('Medium');
           setPdScale(1.0);
+          setActiveFrameColor(null);
+          setActiveLensColor(null);
         } catch (err) {
           console.error('DeepAR switchEffect error:', err);
         }
@@ -91,33 +99,46 @@ export const DeepARVTO = () => {
   }, [selectedGlassesId, selectedGlasses]);
 
   // Handlers for DeepAR Control
-  const handleFrameColor = async (r: number, g: number, b: number) => {
+  const handleFrameColor = async (r: number, g: number, b: number, hex: string) => {
+    setActiveFrameColor(hex);
     if (!deepARRef.current) return;
     try {
-      await deepARRef.current.changeParameterVector('Plastic', 'MeshRenderer', 'u_color', r, g, b, 1.0);
+      await deepARRef.current.changeParameterVector(nodeMapping.frame, 'MeshRenderer', 'u_color', r, g, b, 1.0);
+      await deepARRef.current.changeParameterVector(nodeMapping.frame, 'MeshRenderer', 'u_baseColorFactor', r, g, b, 1.0);
+      await deepARRef.current.changeParameterVector(nodeMapping.frame, 'MeshRenderer', 'u_diffuseColor', r, g, b, 1.0);
     } catch (e) {
-      console.error('Error changing frame color', e);
+      console.error(`Error changing frame color (node: ${nodeMapping.frame})`, e);
     }
   };
 
-  const handleLensColor = async (r: number, g: number, b: number, a: number) => {
+  const handleLensColor = async (r: number, g: number, b: number, a: number, id: string) => {
+    setActiveLensColor(id);
     if (!deepARRef.current) return;
     try {
-      await deepARRef.current.changeParameterVector('LensesMultiply', 'MeshRenderer', 'u_color', r, g, b, a);
-      await deepARRef.current.changeParameterVector('LensesAdd', 'MeshRenderer', 'u_color', r, g, b, a);
+      await deepARRef.current.changeParameterVector(nodeMapping.lensInner, 'MeshRenderer', 'u_color', r, g, b, a);
+      await deepARRef.current.changeParameterVector(nodeMapping.lensInner, 'MeshRenderer', 'u_baseColorFactor', r, g, b, a);
+      await deepARRef.current.changeParameterVector(nodeMapping.lensInner, 'MeshRenderer', 'u_diffuseColor', r, g, b, a);
+      // Only call lensOuter if it's a different node (some models use same mesh for both)
+      if (nodeMapping.lensOuter !== nodeMapping.lensInner) {
+        await deepARRef.current.changeParameterVector(nodeMapping.lensOuter, 'MeshRenderer', 'u_color', r, g, b, a);
+        await deepARRef.current.changeParameterVector(nodeMapping.lensOuter, 'MeshRenderer', 'u_baseColorFactor', r, g, b, a);
+        await deepARRef.current.changeParameterVector(nodeMapping.lensOuter, 'MeshRenderer', 'u_diffuseColor', r, g, b, a);
+      }
     } catch (e) {
-      console.error('Error changing lens color', e);
+      console.error(`Error changing lens color (nodes: ${nodeMapping.lensInner}, ${nodeMapping.lensOuter})`, e);
     }
   };
 
   const updateScale = async (currentSize: 'Medium' | 'Large', currentPd: number) => {
     if (!deepARRef.current) return;
-    const baseScale = currentSize === 'Large' ? 1.1 : 1.0;
+    const baseSizeScale = currentSize === 'Large' ? 1.1 : 1.0;
+    const scaleMultiplier = nodeMapping.baseScale || 1.0;
+    const finalScale = baseSizeScale * scaleMultiplier;
     try {
       // Scale X depends on PD, while Y and Z remain proportional to the base size
-      await deepARRef.current.changeParameterVector('RayBanLow', '', 'scale', baseScale * currentPd, baseScale, baseScale, 0);
+      await deepARRef.current.changeParameterVector(nodeMapping.rootNode, '', 'scale', finalScale * currentPd, finalScale, finalScale, 0);
     } catch (e) {
-      console.error('Error changing node scale', e);
+      console.error(`Error changing scale (node: ${nodeMapping.rootNode})`, e);
     }
   };
 
@@ -132,6 +153,20 @@ export const DeepARVTO = () => {
     updateScale(size, newPd);
   };
 
+  const handleReset = async () => {
+    if (!deepARRef.current || !selectedGlasses?.deeparEffect) return;
+    try {
+      // Switch to the same effect to reset all parameters to default
+      await deepARRef.current.switchEffect(selectedGlasses.deeparEffect);
+      setSize('Medium');
+      setPdScale(1.0);
+      setActiveFrameColor(null);
+      setActiveLensColor(null);
+    } catch (e) {
+      console.error('Error resetting effect', e);
+    }
+  };
+
   return (
     <div className="deepar-wrapper">
       <div ref={containerRef} className="deepar-container" />
@@ -140,23 +175,28 @@ export const DeepARVTO = () => {
       {!isLoading && !error && (
         <div className="deepar-controls-overlay">
           
+          <div className="controls-header">
+            <h4>Customization</h4>
+            <button onClick={handleReset} className="reset-btn">Reset</button>
+          </div>
+
           <div className="control-group">
             <span className="control-label">Frame Color:</span>
             <div className="color-buttons">
-              <button onClick={() => handleFrameColor(0, 0, 0)} className="color-btn" style={{ background: '#000' }} />
-              <button onClick={() => handleFrameColor(0.8, 0.1, 0.1)} className="color-btn" style={{ background: '#cc1919' }} />
-              <button onClick={() => handleFrameColor(0.1, 0.3, 0.8)} className="color-btn" style={{ background: '#194ccc' }} />
-              <button onClick={() => handleFrameColor(0.8, 0.8, 0.8)} className="color-btn" style={{ background: '#ccc' }} />
+              <button onClick={() => handleFrameColor(0, 0, 0, '#000')} className={`color-btn ${activeFrameColor === '#000' ? 'active' : ''}`} style={{ background: '#000' }} />
+              <button onClick={() => handleFrameColor(0.8, 0.1, 0.1, '#cc1919')} className={`color-btn ${activeFrameColor === '#cc1919' ? 'active' : ''}`} style={{ background: '#cc1919' }} />
+              <button onClick={() => handleFrameColor(0.1, 0.3, 0.8, '#194ccc')} className={`color-btn ${activeFrameColor === '#194ccc' ? 'active' : ''}`} style={{ background: '#194ccc' }} />
+              <button onClick={() => handleFrameColor(0.8, 0.8, 0.8, '#ccc')} className={`color-btn ${activeFrameColor === '#ccc' ? 'active' : ''}`} style={{ background: '#ccc' }} />
             </div>
           </div>
 
           <div className="control-group">
             <span className="control-label">Lens Color:</span>
             <div className="color-buttons">
-              <button onClick={() => handleLensColor(0, 0, 0, 0.6)} className="color-btn" style={{ background: 'rgba(0,0,0,0.6)' }} />
-              <button onClick={() => handleLensColor(0.8, 0.8, 0.1, 0.4)} className="color-btn" style={{ background: 'rgba(204,204,25,0.4)' }} />
-              <button onClick={() => handleLensColor(0.1, 0.5, 0.8, 0.4)} className="color-btn" style={{ background: 'rgba(25,127,204,0.4)' }} />
-              <button onClick={() => handleLensColor(1, 1, 1, 0.1)} className="color-btn" style={{ background: 'rgba(255,255,255,0.8)' }}>Clear</button>
+              <button onClick={() => handleLensColor(0, 0, 0, 0.6, 'rgba(0,0,0,0.6)')} className={`color-btn ${activeLensColor === 'rgba(0,0,0,0.6)' ? 'active' : ''}`} style={{ background: 'rgba(0,0,0,0.6)' }} />
+              <button onClick={() => handleLensColor(0.8, 0.8, 0.1, 0.4, 'rgba(204,204,25,0.4)')} className={`color-btn ${activeLensColor === 'rgba(204,204,25,0.4)' ? 'active' : ''}`} style={{ background: 'rgba(204,204,25,0.4)' }} />
+              <button onClick={() => handleLensColor(0.1, 0.5, 0.8, 0.4, 'rgba(25,127,204,0.4)')} className={`color-btn ${activeLensColor === 'rgba(25,127,204,0.4)' ? 'active' : ''}`} style={{ background: 'rgba(25,127,204,0.4)' }} />
+              <button onClick={() => handleLensColor(1, 1, 1, 0.1, 'rgba(255,255,255,0.8)')} className={`color-btn ${activeLensColor === 'rgba(255,255,255,0.8)' ? 'active' : ''}`} style={{ background: 'rgba(255,255,255,0.8)' }}>Clear</button>
             </div>
           </div>
 
@@ -216,13 +256,18 @@ export const DeepARVTO = () => {
         .deepar-wrapper {
           position: absolute;
           inset: 0;
-          overflow: hidden;
+          display: flex;
           background: #000;
         }
+        @media (max-width: 768px) {
+          .deepar-wrapper {
+            flex-direction: column;
+          }
+        }
         .deepar-container {
-          width: 100%;
-          height: 100%;
+          flex: 1;
           position: relative;
+          min-height: 50vh;
         }
         .deepar-container canvas,
         .deepar-container video {
@@ -236,67 +281,109 @@ export const DeepARVTO = () => {
         
         /* UI Controls Customization */
         .deepar-controls-overlay {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          background: rgba(15, 23, 42, 0.85);
-          backdrop-filter: blur(8px);
-          padding: 16px;
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          width: 300px;
+          background: #0f172a;
+          padding: 24px 20px;
           color: white;
           z-index: 20;
           display: flex;
           flex-direction: column;
-          gap: 12px;
-          width: 280px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+          gap: 16px;
+          border-left: 1px solid rgba(255, 255, 255, 0.1);
+          overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+          .deepar-controls-overlay {
+            width: 100%;
+            height: auto;
+            max-height: 45vh;
+            border-left: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+          }
         }
         .control-group {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 8px;
         }
         .control-label {
           font-size: 0.85rem;
           color: #cbd5e1;
           font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
         .color-buttons {
           display: flex;
-          gap: 8px;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .controls-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          padding-bottom: 8px;
+          margin-bottom: 4px;
+        }
+        .controls-header h4 {
+          margin: 0;
+          font-size: 0.95rem;
+          color: #fff;
+        }
+        .reset-btn {
+          background: rgba(255,255,255,0.1);
+          border: none;
+          color: #cbd5e1;
+          font-size: 0.75rem;
+          padding: 4px 10px;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .reset-btn:hover {
+          background: rgba(239, 68, 68, 0.2);
+          color: #fca5a5;
         }
         .color-btn {
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
-          border: 2px solid rgba(255,255,255,0.8);
+          border: 2px solid rgba(255,255,255,0.2);
           cursor: pointer;
-          transition: transform 0.2s;
+          transition: all 0.2s;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.6rem;
+          font-size: 0.65rem;
           color: black;
           font-weight: bold;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .color-btn:hover {
-          transform: scale(1.1);
+        .color-btn.active {
+          border-color: #fff;
+          transform: scale(1.15);
+          box-shadow: 0 0 0 2px #8b5cf6, 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .color-btn:hover:not(.active) {
+          transform: scale(1.05);
+          border-color: rgba(255,255,255,0.5);
         }
         .radio-group {
           display: flex;
-          gap: 16px;
-          font-size: 0.9rem;
+          gap: 20px;
+          font-size: 0.95rem;
         }
         .radio-group label {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
           cursor: pointer;
         }
         .pd-slider {
           width: 100%;
           accent-color: #8b5cf6;
+          margin-top: 4px;
         }
 
         .deepar-loading {

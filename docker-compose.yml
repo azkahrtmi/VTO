@@ -1,0 +1,40 @@
+# Odoo 18 + PostgreSQL untuk VTO Headless CMS PoC
+# Jalankan: docker compose up -d
+# Akses Odoo: http://localhost:8069
+# Stop: docker compose down
+# Hapus semua data: docker compose down -v
+
+services:
+  db:
+    image: postgres:16
+    container_name: vto-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo123
+    ports:
+      - "5433:5432"   # Port 5433 agar tidak conflict dengan PostgreSQL lokal
+    volumes:
+      - vto-db-data:/var/lib/postgresql/data
+
+  odoo:
+    image: odoo:18
+    container_name: vto-odoo
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"   # Akses Odoo di http://localhost:8069
+    environment:
+      HOST: db
+      PORT: 5432
+      USER: odoo
+      PASSWORD: odoo123
+    volumes:
+      - vto-odoo-data:/var/lib/odoo
+      - ./odoo-addons:/mnt/extra-addons   # Custom modules kita taruh di sini
+
+volumes:
+  vto-db-data:
+  vto-odoo-data:

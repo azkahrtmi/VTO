@@ -6,7 +6,6 @@ import { LandingPage } from './components/landing/LandingPage';
 import { LoginModal } from './components/landing/LoginModal';
 import { EyeglassesPage } from './components/eyeglasses/EyeglassesPage';
 import { useAppStore } from './store';
-import { GLASSES_CATALOG } from './catalog/glasses';
 
 type AREngine = 'mindar' | 'deepar';
 type AppPage = 'landing' | 'eyeglasses';
@@ -22,20 +21,23 @@ function App() {
   const [loginOpen, setLoginOpen] = useState(false);
 
   const { 
-    selectedGlassesId, setSelectedGlassesId
+    selectedGlassesId, setSelectedGlassesId, glassesCatalog, loadCatalogFromOdoo
   } = useAppStore();
+
+  useEffect(() => {
+    loadCatalogFromOdoo();
+  }, [loadCatalogFromOdoo]);
 
   // Filter catalog based on active engine
   const filteredCatalog = useMemo(() => 
-    GLASSES_CATALOG.filter(g => g.engine === arEngine),
-    [arEngine]
+    glassesCatalog.filter(g => g.engine === arEngine),
+    [glassesCatalog, arEngine]
   );
 
-  // Auto-select first glasses when switching engine
   const handleEngineSwitch = (engine: AREngine) => {
     if (engine === arEngine) return;
     setArEngine(engine);
-    const firstOfEngine = GLASSES_CATALOG.find(g => g.engine === engine);
+    const firstOfEngine = glassesCatalog.find(g => g.engine === engine);
     if (firstOfEngine) {
       setSelectedGlassesId(firstOfEngine.id);
     }

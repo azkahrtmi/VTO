@@ -40,7 +40,16 @@ export const GLASSES_CATALOG: Glasses[] = [
     color: '#8B5CF6',
     type: 'local',
     engine: 'deepar',
-    deeparEffect: '/coba4.deepar'
+    deeparEffect: '/coba4.deepar',
+    // Node mapping sesuai hierarki model client (coba4.glb)
+    // Lihat docs/3d_model_specification.md untuk standar yang benar
+    nodeMapping: {
+      frame: 'Frame',             
+      lensInner: 'LensInner',     
+      lensOuter: 'LensOuter',     
+      rootNode: 'coba4_fixed.glb',
+      baseScale: 100, // Coba4 requires 100x scale in DeepAR
+    }
   },
   {
     id: 'rayban-deepar',
@@ -49,6 +58,15 @@ export const GLASSES_CATALOG: Glasses[] = [
     color: '#F59E0B',
     type: 'local',
     engine: 'deepar',
-    deeparEffect: '/rayban.deepar'
+    deeparEffect: '/rayban.deepar',
+    // Node mapping standar DeepAR (RayBan)
+    nodeMapping: {
+      frame: 'Plastic',
+      lensInner: 'LensesMultiply',
+      lensOuter: 'LensesAdd',
+      rootNode: 'RayBanLow',
+      baseScale: 1, // RayBan is 1x scale
+    }
   }
 ];
+

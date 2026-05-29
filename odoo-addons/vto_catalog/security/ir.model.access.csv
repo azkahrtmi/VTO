@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_glasses_product_public,glasses.product.public,model_glasses_product,,1,0,0,0
+access_glasses_product_admin,glasses.product.admin,model_glasses_product,base.group_system,1,1,1,1

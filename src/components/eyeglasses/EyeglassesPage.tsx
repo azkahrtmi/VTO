@@ -4,8 +4,9 @@ import { LandingNavbar } from '../landing/LandingNavbar';
 import { LandingTopBar } from '../landing/LandingTopBar';
 import { EyeglassesProductCard } from './EyeglassesProductCard';
 import { EyeglassesSidebar } from './EyeglassesSidebar';
-import { EYEGLASSES_FILTER_CHIPS, EYEGLASSES_PRODUCTS } from './eyeglassesData';
 import { EyeglassesToolbar } from './EyeglassesToolbar';
+import { useAppStore } from '../../store';
+import { EYEGLASSES_FILTER_CHIPS, EYEGLASSES_PRODUCTS } from './eyeglassesData';
 
 type EyeglassesPageProps = {
   onNavigateHome: () => void;
@@ -19,6 +20,19 @@ export function EyeglassesPage({
   onSignIn,
 }: EyeglassesPageProps) {
   const [filtersVisible, setFiltersVisible] = useState(true);
+  const { odooProducts } = useAppStore();
+
+  const displayProducts = [
+    ...EYEGLASSES_PRODUCTS,
+    ...odooProducts.map(og => ({
+        brand: og.brand || 'VTO',
+        model: og.name,
+        price: `Rp ${og.price.toLocaleString('id-ID')}`,
+        image: og.image_url || '/landing/kacamata/image.png',
+        colors: [og.color_hex || '#000000'],
+        badge: og.is_featured ? 'Featured' : undefined,
+    }))
+  ];
 
   return (
     <div className="min-h-screen bg-white font-['Outfit','Poppins',sans-serif] text-[#1d2427]">
@@ -53,7 +67,7 @@ export function EyeglassesPage({
             }`}
           >
             <EyeglassesToolbar
-              totalItems={EYEGLASSES_PRODUCTS.length}
+              totalItems={displayProducts.length}
               filtersVisible={filtersVisible}
               onToggleFilters={() => setFiltersVisible((prev) => !prev)}
             />
@@ -81,7 +95,7 @@ export function EyeglassesPage({
                   : 'grid-cols-4 max-[1280px]:grid-cols-3 max-[960px]:grid-cols-2'
               }`}
             >
-              {EYEGLASSES_PRODUCTS.map((product) => (
+              {displayProducts.map((product) => (
                 <EyeglassesProductCard
                   key={`${product.brand}-${product.model}`}
                   product={product}

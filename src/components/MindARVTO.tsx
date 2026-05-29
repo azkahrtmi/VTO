@@ -1,13 +1,12 @@
 // @ts-nocheck
 import { useEffect, useRef } from 'react';
 import { useAppStore } from '../store';
-import { GLASSES_CATALOG } from '../catalog/glasses';
 import './smooth-follow.js'; // Import custom smooth-tracking logic
 
 export const MindARVTO = () => {
   const sceneRef = useRef<any>(null);
-  const { selectedGlassesId } = useAppStore();
-  const selectedGlasses = GLASSES_CATALOG.find(g => g.id === selectedGlassesId);
+  const { selectedGlassesId, glassesCatalog } = useAppStore();
+  const selectedGlasses = glassesCatalog.find(g => g.id === selectedGlassesId);
   const modelSrc = selectedGlasses?.sku;
   // Cleanup: stop MindAR on unmount
   useEffect(() => {

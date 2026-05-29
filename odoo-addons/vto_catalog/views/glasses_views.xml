@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════
+         VTO Catalog — Glasses Product Admin Views
+         
+         Ini adalah form dan list view yang muncul di Odoo admin panel.
+         Admin bisa tambah/edit/hapus kacamata dari sini.
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- ── List View ──────────────────────────────────────────── -->
+    <record id="view_glasses_product_tree" model="ir.ui.view">
+        <field name="name">glasses.product.list</field>
+        <field name="model">glasses.product</field>
+        <field name="arch" type="xml">
+            <list string="Catalog Kacamata">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="sku"/>
+                <field name="brand"/>
+                <field name="price" widget="monetary"/>
+                <field name="color"/>
+                <field name="engine"/>
+                <field name="category"/>
+                <field name="is_published"/>
+                <field name="is_featured"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Form View ───────────────────────────────────────────────── -->
+    <record id="view_glasses_product_form" model="ir.ui.view">
+        <field name="name">glasses.product.form</field>
+        <field name="model">glasses.product</field>
+        <field name="arch" type="xml">
+            <form string="Detail Kacamata">
+                <header>
+                    <field name="is_published" widget="boolean_button"
+                        options='{"terminology": {"string_true": "Published", "string_false": "Not Published"}}'/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nama Kacamata"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Informasi Produk">
+                            <field name="sku"/>
+                            <field name="brand"/>
+                            <field name="category"/>
+                            <field name="color"/>
+                            <field name="color_hex" widget="color"/>
+                            <field name="is_featured"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group string="Harga">
+                            <field name="price"/>
+                            <field name="price_discount"/>
+                        </group>
+                    </group>
+
+                    <group string="Virtual Try-On">
+                        <group>
+                            <field name="engine"/>
+                            <field name="model_3d_url" placeholder="/coba4.glb"/>
+                            <field name="deepar_effect_url" placeholder="/coba4.deepar"/>
+                        </group>
+                    </group>
+
+                    <group string="Media">
+                        <field name="image" widget="image" class="oe_avatar"/>
+                        <field name="image_filename" invisible="1"/>
+                    </group>
+
+                    <group string="Deskripsi">
+                        <field name="description" placeholder="Deskripsi lengkap produk..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Search View ─────────────────────────────────────────────── -->
+    <record id="view_glasses_product_search" model="ir.ui.view">
+        <field name="name">glasses.product.search</field>
+        <field name="model">glasses.product</field>
+        <field name="arch" type="xml">
+            <search string="Cari Kacamata">
+                <field name="name"/>
+                <field name="sku"/>
+                <field name="brand"/>
+                <filter name="published" string="Published" domain="[('is_published','=',True)]"/>
+                <filter name="featured" string="Featured" domain="[('is_featured','=',True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_brand" string="Brand" context="{'group_by': 'brand'}"/>
+                    <filter name="group_category" string="Kategori" context="{'group_by': 'category'}"/>
+                    <filter name="group_engine" string="AR Engine" context="{'group_by': 'engine'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Action ──────────────────────────────────────────────────── -->
+    <record id="action_glasses_product" model="ir.actions.act_window">
+        <field name="name">Catalog Kacamata</field>
+        <field name="res_model">glasses.product</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_glasses_product_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tambah kacamata baru ke catalog!
+            </p>
+            <p>
+                Data kacamata yang ditambahkan di sini akan otomatis 
+                tersedia di React frontend via API.
+            </p>
+        </field>
+    </record>
+
+    <!-- ── Menu Items ──────────────────────────────────────────────── -->
+    <menuitem id="menu_vto_root" 
+        name="VTO Catalog" 
+        sequence="100"
+        web_icon="vto_catalog,static/description/icon.png"/>
+    
+    <menuitem id="menu_vto_catalog" 
+        name="Catalog" 
+        parent="menu_vto_root" 
+        sequence="10"/>
+    
+    <menuitem id="menu_glasses_products" 
+        name="Kacamata" 
+        parent="menu_vto_catalog" 
+        action="action_glasses_product" 
+        sequence="10"/>
+
+</odoo>

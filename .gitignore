@@ -26,3 +26,6 @@ ped.txt
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation
+EXPLANATION_ODOO_HEADLESS.md
