@@ -6,6 +6,8 @@ import { DEFAULT_NODE_MAPPING } from '../types/glasses';
 import type { NodeMapping } from '../types/glasses';
 
 const LICENSE_KEY = import.meta.env.VITE_DEEPAR_LICENSE_KEY || '';
+// Average adult PD — glasses at 1.0 scale when user PD = this value
+const REFERENCE_PD_MM = 62;
 
 export const DeepARVTO = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,8 +17,7 @@ export const DeepARVTO = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Customization States
-  const [size, setSize] = useState<'Medium' | 'Large'>('Medium');
-  const [pdScale, setPdScale] = useState(1.0);
+  const [pdMm, setPdMm] = useState(REFERENCE_PD_MM);
   const [activeFrameColor, setActiveFrameColor] = useState<string | null>(null);
   const [activeLensColor, setActiveLensColor] = useState<string | null>(null);
 
@@ -37,18 +38,18 @@ export const DeepARVTO = () => {
         setError(null);
 
         // Find default DeepAR effect to load
-        const defaultEffect = selectedGlasses?.engine === 'deepar' 
+        const defaultEffect = selectedGlasses?.deeparEffect 
           ? selectedGlasses.deeparEffect 
-          : glassesCatalog.find(g => g.engine === 'deepar')?.deeparEffect;
+          : glassesCatalog.find(g => g.deeparEffect)?.deeparEffect;
 
         const instance = await deepar.initialize({
           licenseKey: LICENSE_KEY,
           previewElement: containerRef.current!,
-          effect: defaultEffect || undefined,
           additionalOptions: {
             cameraConfig: {
               facingMode: 'user', // front camera
             },
+            numberOfFaces: 4, // Enable multiple face tracking (max 4 faces)
           },
         });
 
@@ -81,13 +82,23 @@ export const DeepARVTO = () => {
   useEffect(() => {
     if (!deepARRef.current || !selectedGlasses) return;
 
-    if (selectedGlasses.engine === 'deepar' && selectedGlasses.deeparEffect) {
+    if (selectedGlasses.deeparEffect) {
       const switchEffect = async () => {
         try {
-          await deepARRef.current.switchEffect(selectedGlasses.deeparEffect);
+          // Load the effect for up to 4 faces
+          const promises = [];
+          for (let i = 0; i < 4; i++) {
+            promises.push(
+              deepARRef.current.switchEffect(selectedGlasses.deeparEffect, {
+                slot: `glasses_face_${i}`,
+                face: i
+              })
+            );
+          }
+          await Promise.all(promises);
+
           // Reset customization when switching glasses
-          setSize('Medium');
-          setPdScale(1.0);
+          setPdMm(REFERENCE_PD_MM);
           setActiveFrameColor(null);
           setActiveLensColor(null);
         } catch (err) {
@@ -129,28 +140,24 @@ export const DeepARVTO = () => {
     }
   };
 
-  const updateScale = async (currentSize: 'Medium' | 'Large', currentPd: number) => {
+  const updateScale = async (currentPdMm: number) => {
     if (!deepARRef.current) return;
-    const baseSizeScale = currentSize === 'Large' ? 1.1 : 1.0;
-    const scaleMultiplier = nodeMapping.baseScale || 1.0;
-    const finalScale = baseSizeScale * scaleMultiplier;
+    // Uniform scale: larger PD = smaller glasses (inverse relationship)
+    // Reference 62mm = scale 1.0. Scale = (REFERENCE_PD / pdMm) * baseScale
+    const baseScale = nodeMapping.baseScale || 1.0;
+    const pdScale = (REFERENCE_PD_MM / currentPdMm) * baseScale;
     try {
-      // Scale X depends on PD, while Y and Z remain proportional to the base size
-      await deepARRef.current.changeParameterVector(nodeMapping.rootNode, '', 'scale', finalScale * currentPd, finalScale, finalScale, 0);
+      // Uniform scale — X, Y, Z all change equally (not just stretching X)
+      await deepARRef.current.changeParameterVector(nodeMapping.rootNode, '', 'scale', pdScale, pdScale, pdScale, 0);
     } catch (e) {
       console.error(`Error changing scale (node: ${nodeMapping.rootNode})`, e);
     }
   };
 
-  const handleSizeChange = (newSize: 'Medium' | 'Large') => {
-    setSize(newSize);
-    updateScale(newSize, pdScale);
-  };
-
   const handlePdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPd = parseFloat(e.target.value);
-    setPdScale(newPd);
-    updateScale(size, newPd);
+    const newPdMm = parseFloat(e.target.value);
+    setPdMm(newPdMm);
+    updateScale(newPdMm);
   };
 
   const handleReset = async () => {
@@ -158,8 +165,7 @@ export const DeepARVTO = () => {
     try {
       // Switch to the same effect to reset all parameters to default
       await deepARRef.current.switchEffect(selectedGlasses.deeparEffect);
-      setSize('Medium');
-      setPdScale(1.0);
+      setPdMm(REFERENCE_PD_MM);
       setActiveFrameColor(null);
       setActiveLensColor(null);
     } catch (e) {
@@ -201,36 +207,24 @@ export const DeepARVTO = () => {
           </div>
 
           <div className="control-group">
-            <span className="control-label">Size:</span>
-            <div className="radio-group">
-              <label>
-                <input 
-                  type="radio" 
-                  checked={size === 'Medium'} 
-                  onChange={() => handleSizeChange('Medium')} 
-                /> Medium
-              </label>
-              <label>
-                <input 
-                  type="radio" 
-                  checked={size === 'Large'} 
-                  onChange={() => handleSizeChange('Large')} 
-                /> Large
-              </label>
+            <div className="pd-label-row">
+              <span className="control-label">Pupillary Distance</span>
+              <span className="pd-value-badge">{pdMm} mm</span>
             </div>
-          </div>
-
-          <div className="control-group">
-            <span className="control-label">PD (Pupillary Distance): {pdScale.toFixed(2)}x</span>
             <input 
               type="range" 
-              min="0.8" 
-              max="1.2" 
-              step="0.05" 
-              value={pdScale} 
+              min="45" 
+              max="75" 
+              step="1" 
+              value={pdMm} 
               onChange={handlePdChange}
               className="pd-slider"
             />
+            <div className="pd-range-labels">
+              <span>45 mm</span>
+              <span>62 mm</span>
+              <span>75 mm</span>
+            </div>
           </div>
 
         </div>
@@ -369,21 +363,34 @@ export const DeepARVTO = () => {
           transform: scale(1.05);
           border-color: rgba(255,255,255,0.5);
         }
-        .radio-group {
+        .pd-label-row {
           display: flex;
-          gap: 20px;
-          font-size: 0.95rem;
-        }
-        .radio-group label {
-          display: flex;
+          justify-content: space-between;
           align-items: center;
-          gap: 8px;
-          cursor: pointer;
+        }
+        .pd-value-badge {
+          background: rgba(139, 92, 246, 0.2);
+          color: #c4b5fd;
+          font-size: 0.85rem;
+          font-weight: 700;
+          padding: 2px 10px;
+          border-radius: 20px;
+          border: 1px solid rgba(139, 92, 246, 0.4);
+          font-variant-numeric: tabular-nums;
         }
         .pd-slider {
           width: 100%;
           accent-color: #8b5cf6;
-          margin-top: 4px;
+          margin-top: 6px;
+          cursor: pointer;
+        }
+        .pd-range-labels {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.7rem;
+          color: #64748b;
+          margin-top: 2px;
+          padding: 0 2px;
         }
 
         .deepar-loading {

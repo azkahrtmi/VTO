@@ -1,13 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { RefreshCw, X } from 'lucide-react';
-import { MindARVTO } from './components/MindARVTO';
 import { DeepARVTO } from './components/DeepARVTO';
 import { LandingPage } from './components/landing/LandingPage';
 import { LoginModal } from './components/landing/LoginModal';
 import { EyeglassesPage } from './components/eyeglasses/EyeglassesPage';
 import { useAppStore } from './store';
 
-type AREngine = 'mindar' | 'deepar';
 type AppPage = 'landing' | 'eyeglasses';
 
 const getCurrentPage = (): AppPage =>
@@ -16,7 +14,6 @@ const getCurrentPage = (): AppPage =>
 function App() {
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [arEngine, setArEngine] = useState<AREngine>('mindar');
   const [currentPage, setCurrentPage] = useState<AppPage>(getCurrentPage);
   const [loginOpen, setLoginOpen] = useState(false);
 
@@ -27,21 +24,6 @@ function App() {
   useEffect(() => {
     loadCatalogFromOdoo();
   }, [loadCatalogFromOdoo]);
-
-  // Filter catalog based on active engine
-  const filteredCatalog = useMemo(() => 
-    glassesCatalog.filter(g => g.engine === arEngine),
-    [glassesCatalog, arEngine]
-  );
-
-  const handleEngineSwitch = (engine: AREngine) => {
-    if (engine === arEngine) return;
-    setArEngine(engine);
-    const firstOfEngine = glassesCatalog.find(g => g.engine === engine);
-    if (firstOfEngine) {
-      setSelectedGlassesId(firstOfEngine.id);
-    }
-  };
 
   useEffect(() => {
     const handlePopState = () => {
@@ -120,33 +102,15 @@ function App() {
               </button>
             </div>
 
-            {/* Engine Switcher */}
-            <div className="engine-switcher">
-              <button 
-                className={`engine-tab ${arEngine === 'mindar' ? 'active' : ''}`}
-                onClick={() => handleEngineSwitch('mindar')}
-              >
-                <span className="engine-dot mindar-dot" />
-                MindAR
-              </button>
-              <button 
-                className={`engine-tab ${arEngine === 'deepar' ? 'active' : ''}`}
-                onClick={() => handleEngineSwitch('deepar')}
-              >
-                <span className="engine-dot deepar-dot" />
-                DeepAR
-              </button>
-            </div>
-
             {/* Camera Feed Container */}
             <div className="vto-modal-camera">
-              {arEngine === 'mindar' ? <MindARVTO /> : <DeepARVTO />}
+              <DeepARVTO />
             </div>
 
             {/* Glasses Selector */}
             <div className="vto-modal-selector">
               <div className="vto-modal-glasses-row">
-                {filteredCatalog.map((item) => (
+                {glassesCatalog.map((item) => (
                   <button 
                     key={item.id}
                     className={`vto-glass-chip ${selectedGlassesId === item.id ? 'active' : ''}`}

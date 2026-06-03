@@ -36,8 +36,7 @@ export class Glasses {
   sku: string = '';
   name: string = '';
   color: string = '';
-  type: 'jeeliz' | 'local' = 'local';
-  engine: 'mindar' | 'deepar' = 'mindar';
+  type: 'local' = 'local';
   deeparEffect?: string;
   scale?: string;
   position?: string;

@@ -548,74 +548,7 @@ img {
   color: white;
 }
 
-/* Engine Switcher (MindAR / DeepAR) */
-.engine-switcher {
-  display: flex;
-  gap: 0;
-  padding: 0.5rem 1.25rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
 
-.engine-tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  color: #94a3b8;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  letter-spacing: 0.02em;
-}
-
-.engine-tab:first-child {
-  border-radius: 8px 0 0 8px;
-  border-right: none;
-}
-
-.engine-tab:last-child {
-  border-radius: 0 8px 8px 0;
-}
-
-.engine-tab:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-}
-
-.engine-tab.active {
-  background: rgba(12, 114, 135, 0.2);
-  border-color: #0c7287;
-  color: #67e8f9;
-}
-
-.engine-tab:last-child.active {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: #8B5CF6;
-  color: #c4b5fd;
-}
-
-.engine-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.mindar-dot {
-  background: #0c7287;
-  box-shadow: 0 0 6px rgba(12, 114, 135, 0.5);
-}
-
-.deepar-dot {
-  background: #8B5CF6;
-  box-shadow: 0 0 6px rgba(139, 92, 246, 0.5);
-}
 
 /* Camera feed area */
 .vto-modal-camera {
@@ -623,18 +556,6 @@ img {
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  /* background removed so MindAR video (z-index: -2) can show through */
-}
-
-/* MindAR container fills the camera area */
-.mindar-container {
-  position: absolute;
-  inset: 0;
-}
-
-.mindar-container a-scene {
-  width: 100% !important;
-  height: 100% !important;
 }
 
 /* Glasses selector row */
