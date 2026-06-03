@@ -462,6 +462,10 @@ export const AutoPDOverlay = ({
           line-height: 1.5;
         }
 
+        .auto-pd-instructions p {
+          margin: 0;
+        }
+
         .auto-pd-video-wrapper {
           position: relative;
           width: 100%;
@@ -620,24 +624,92 @@ export const AutoPDOverlay = ({
         }
 
         @media (max-width: 768px) {
+          .auto-pd-overlay {
+            align-items: stretch;
+            justify-content: stretch;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: none;
+          }
+
           .auto-pd-container {
-            width: 95%;
+            width: 100%;
+            min-height: 100dvh;
             max-width: 100%;
-            padding: 16px;
-            gap: 16px;
+            max-height: none;
+            padding: 12px;
+            gap: 10px;
+            border: 0;
+            border-radius: 0;
+            justify-content: center;
+          }
+
+          .auto-pd-instructions {
+            font-size: 0.88rem;
+            line-height: 1.35;
+            padding: 0 10px;
           }
 
           .auto-pd-video-wrapper {
-            max-height: 58vh;
+            border-radius: 10px;
+            max-height: none;
+          }
+
+          .auto-pd-info {
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 10px;
+          }
+
+          .auto-pd-value {
+            gap: 4px;
           }
 
           .auto-pd-number {
-            font-size: 2rem;
+            font-size: 1.9rem;
+            line-height: 1;
+          }
+
+          .auto-pd-unit {
+            font-size: 0.95rem;
+          }
+
+          .auto-pd-status {
+            font-size: 0.82rem;
+            text-align: right;
+          }
+
+          .auto-pd-buttons {
+            gap: 10px;
           }
 
           .auto-pd-btn {
-            padding: 10px 20px;
+            min-height: 48px;
+            max-width: none;
+            padding: 10px 16px;
             font-size: 0.9rem;
+            border-radius: 10px;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .auto-pd-container {
+            padding: 10px;
+          }
+
+          .auto-pd-instructions {
+            font-size: 0.82rem;
+          }
+
+          .auto-pd-info {
+            align-items: center;
+          }
+
+          .auto-pd-number {
+            font-size: 1.7rem;
+          }
+
+          .auto-pd-status {
+            max-width: 52%;
           }
         }
       `,
@@ -683,31 +755,23 @@ const drawHeadPlacementGuide = (
   const radiusY = Math.min(canvas.height * 0.38, 280);
 
   ctx.strokeStyle = isHeadTilted
-    ? "rgba(249, 115, 22, 0.4)"
-    : "rgba(34, 197, 94, 0.45)";
-  ctx.lineWidth = 3;
+    ? "rgba(249, 115, 22, 0.35)"
+    : "rgba(34, 197, 94, 0.32)";
+  ctx.lineWidth = 2;
   ctx.setLineDash([10, 8]);
   ctx.beginPath();
   ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
   ctx.stroke();
 
   ctx.strokeStyle = isHeadTilted
-    ? "rgba(249, 115, 22, 0.4)"
-    : "rgba(34, 197, 94, 0.2)";
+    ? "rgba(249, 115, 22, 0.28)"
+    : "rgba(34, 197, 94, 0.16)";
   ctx.lineWidth = 1;
   ctx.setLineDash([2, 2]);
   ctx.beginPath();
   ctx.moveTo(centerX, Math.max(0, centerY - radiusY - 24));
   ctx.lineTo(centerX, Math.min(canvas.height, centerY + radiusY + 24));
   ctx.stroke();
-
-  ctx.fillStyle = isHeadTilted
-    ? "rgba(249, 115, 22, 0.85)"
-    : "rgba(34, 197, 94, 0.85)";
-  ctx.font = "16px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  ctx.fillText("Posisikan wajah di dalam oval", centerX, centerY + radiusY + 12);
   ctx.setLineDash([]);
 };
 
