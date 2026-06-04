@@ -41,6 +41,16 @@ export class Glasses {
   scale?: string;
   position?: string;
   rotation?: string;
+  /** Ukuran optik frame dalam mm, contoh marking fisik: 52-17-130 */
+  lensWidthMm?: number;
+  bridgeMm?: number;
+  templeMm?: number;
+  /** Lens width + bridge. Dipakai sebagai acuan scale PD jika tersedia. */
+  framePdMm?: number;
+  /** Lebar total frame hasil ukur/model/data produk, jika tersedia. */
+  frameWidthMm?: number;
+  /** Acuan PD untuk kalibrasi visual wajah, terpisah dari ukuran fisik frame. */
+  pdCalibrationMm?: number;
   /** Node mapping untuk DeepAR — konfigurasi nama node per model */
   nodeMapping?: NodeMapping;
 }

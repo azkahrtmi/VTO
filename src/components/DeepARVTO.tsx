@@ -8,9 +8,11 @@ import { AutoPDOverlay } from "./AutoPDOverlay";
 
 const LICENSE_KEY = import.meta.env.VITE_DEEPAR_LICENSE_KEY || "";
 // Average adult PD — glasses at 1.0 scale when user PD = this value
-const REFERENCE_PD_MM = 62;
+const REFERENCE_PD_MM = 75;
 const MIN_PD_MM = 45;
 const MAX_PD_MM = 75;
+const PD_SCALE_STRENGTH = 0.45;
+const MAX_PD_SCALE_MULTIPLIER = 1.25;
 
 const clampPd = (value: number) =>
   Math.min(MAX_PD_MM, Math.max(MIN_PD_MM, value));
@@ -245,10 +247,17 @@ export const DeepARVTO = () => {
 
   const updateScale = async (currentPdMm: number) => {
     if (!deepARRef.current) return;
-    // Uniform scale: larger PD = smaller glasses (inverse relationship)
-    // Reference 62mm = scale 1.0. Scale = (REFERENCE_PD / pdMm) * baseScale
-    const baseScale = nodeMapping.baseScale || 1.0;
-    const pdScale = (REFERENCE_PD_MM / currentPdMm) * baseScale;
+    // Aglio-style scale: PD 75 is the smallest/base visual size.
+    // Smaller PD values increase the rendered frame size, but with a damped curve.
+    const physicalFrameScale = nodeMapping.baseScale || 1.0;
+    const pdCalibrationMm =
+      selectedGlasses?.pdCalibrationMm || REFERENCE_PD_MM;
+    const rawPdMultiplier = pdCalibrationMm / currentPdMm;
+    const pdMultiplier = Math.min(
+      MAX_PD_SCALE_MULTIPLIER,
+      Math.max(1, rawPdMultiplier ** PD_SCALE_STRENGTH),
+    );
+    const pdScale = pdMultiplier * physicalFrameScale;
     try {
       // Uniform scale — X, Y, Z all change equally (not just stretching X)
       await deepARRef.current.changeParameterVector(
