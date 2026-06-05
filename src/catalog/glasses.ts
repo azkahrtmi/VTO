@@ -39,4 +39,22 @@ export const GLASSES_CATALOG: Glasses[] = [
       baseScale: 1, // RayBan is 1x scale
     },
   },
+  {
+    id: "2023-deepar",
+    name: "2023 Party DeepAR",
+    sku: "/2023.deepar",
+    color: "#0EF529",
+    type: "local",
+    deeparEffect: "/2023.deepar",
+
+    nodeMapping: {
+      frame: "white_base",
+      // Model 2023 tidak memiliki pasangan LensesMultiply/LensesAdd.
+      // Gunakan node light transparan yang sama agar lensOuter tidak dipanggil dua kali.
+      lensInner: "lights_opacity",
+      lensOuter: "lights_opacity",
+      rootNode: "2023_glasses.fbx",
+      baseScale: 1,
+    },
+  },
 ];
