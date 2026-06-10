@@ -12,7 +12,6 @@ export const GLASSES_CATALOG: Glasses[] = [
     bridgeMm: 17,
     framePdMm: 69,
     frameWidthMm: 145.14,
-    pdCalibrationMm: 75,
     // Node mapping sesuai hierarki model client (coba4_fixed.glb)
     // Lihat docs/3d_model_specification.md untuk standar yang benar
     nodeMapping: {
