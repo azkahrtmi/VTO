@@ -30,6 +30,7 @@ export const GLASSES_CATALOG: Glasses[] = [
     color: "#F59E0B",
     type: "local",
     deeparEffect: "/rayban.deepar",
+    pdCalibrationMm: 45,
     // Node mapping standar DeepAR (RayBan)
     nodeMapping: {
       frame: "Plastic",
@@ -46,6 +47,7 @@ export const GLASSES_CATALOG: Glasses[] = [
     color: "#0EF529",
     type: "local",
     deeparEffect: "/2023.deepar",
+    pdCalibrationMm: 45,
 
     nodeMapping: {
       frame: "white_base",

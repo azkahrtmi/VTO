@@ -38,6 +38,10 @@ export const DeepARVTO = () => {
     (g) => g.id === selectedGlassesId,
   );
 
+  // Base PD untuk kacamata yang sedang dipilih (framePdMm > pdCalibrationMm > default)
+  const getBasePdMm = (glasses?: typeof selectedGlasses) =>
+    glasses?.framePdMm || glasses?.pdCalibrationMm || REFERENCE_PD_MM;
+
   // Resolve node mapping: use model-specific mapping, or fall back to defaults
   const nodeMapping: NodeMapping =
     selectedGlasses?.nodeMapping || DEFAULT_NODE_MAPPING;
@@ -113,8 +117,9 @@ export const DeepARVTO = () => {
           await Promise.all(promises);
 
           // Reset customization when switching glasses
-          setPdMm(REFERENCE_PD_MM);
-          setPdInputValue(String(REFERENCE_PD_MM));
+          const basePdMm = getBasePdMm(selectedGlasses);
+          setPdMm(basePdMm);
+          setPdInputValue(String(basePdMm));
           setActiveFrameColor(null);
           setActiveLensColor(null);
         } catch (err) {
@@ -247,12 +252,12 @@ export const DeepARVTO = () => {
 
   const updateScale = async (currentPdMm: number) => {
     if (!deepARRef.current) return;
-    // Aglio-style scale: PD 75 is the smallest/base visual size.
-    // Smaller PD values increase the rendered frame size, but with a damped curve.
+    // Base PD diambil dari ukuran asli kacamata (framePdMm = lensWidth + bridge).
+    // PD user di bawah/sama dengan base -> ukuran 100% (base).
+    // PD user di atas base -> kacamata membesar, dengan kurva damped.
     const physicalFrameScale = nodeMapping.baseScale || 1.0;
-    const pdCalibrationMm =
-      selectedGlasses?.pdCalibrationMm || REFERENCE_PD_MM;
-    const rawPdMultiplier = pdCalibrationMm / currentPdMm;
+    const basePdMm = getBasePdMm(selectedGlasses);
+    const rawPdMultiplier = currentPdMm / basePdMm;
     const pdMultiplier = Math.min(
       MAX_PD_SCALE_MULTIPLIER,
       Math.max(1, rawPdMultiplier ** PD_SCALE_STRENGTH),
@@ -324,8 +329,9 @@ export const DeepARVTO = () => {
     try {
       // Switch to the same effect to reset all parameters to default
       await deepARRef.current.switchEffect(selectedGlasses.deeparEffect);
-      setPdMm(REFERENCE_PD_MM);
-      setPdInputValue(String(REFERENCE_PD_MM));
+      const basePdMm = getBasePdMm(selectedGlasses);
+      setPdMm(basePdMm);
+      setPdInputValue(String(basePdMm));
       setActiveFrameColor(null);
       setActiveLensColor(null);
     } catch (e) {
