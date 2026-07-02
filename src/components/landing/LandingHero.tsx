@@ -1,11 +1,11 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 
 type LandingHeroProps = {
   onStartTryOn: () => void;
   onNavigateShop?: () => void;
 };
 
-const item = (i: number) => ({
+const item = (i: number): Variants => ({
   hidden: { opacity: 0, y: 20 },
   show: {
     opacity: 1,
