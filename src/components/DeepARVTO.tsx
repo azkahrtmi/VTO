@@ -91,7 +91,7 @@ export const DeepARVTO = () => {
             cameraConfig: {
               facingMode: "user", // front camera
             },
-            numberOfFaces: 4, // Enable multiple face tracking (max 4 faces)
+            numberOfFaces: 1, // Single face untuk performa optimal (demo 1 pengguna)
           },
         });
 
@@ -141,17 +141,10 @@ export const DeepARVTO = () => {
 
     const switchEffect = async () => {
       try {
-        // Load the effect for up to 4 faces
-        const promises = [];
-        for (let i = 0; i < 4; i++) {
-          promises.push(
-            deepARRef.current.switchEffect(effect, {
-              slot: `glasses_face_${i}`,
-              face: i,
-            }),
-          );
-        }
-        await Promise.all(promises);
+        await deepARRef.current.switchEffect(effect, {
+          slot: 'glasses',
+          face: 0,
+        });
 
         // Tampilkan frame pada ukuran asli (sesuai baseScale model)
         await applyBaseScale(mapping);
@@ -303,6 +296,27 @@ export const DeepARVTO = () => {
     } catch (e) {
       console.error(`Error setting base scale (node: ${mapping.rootNode})`, e);
     }
+    await applyOccluderTuning(mapping);
+  };
+
+  // Perbesar head occluder sesuai konfigurasi model agar gagang kacamata
+  // tertutup rambut/kepala saat menoleh atau menunduk
+  const applyOccluderTuning = async (mapping: NodeMapping) => {
+    if (!deepARRef.current || !mapping.occluder || !mapping.occluderScale) return;
+    const { x, y, z } = mapping.occluderScale;
+    try {
+      await deepARRef.current.changeParameterVector(
+        mapping.occluder,
+        "",
+        "scale",
+        x,
+        y,
+        z,
+        0,
+      );
+    } catch (e) {
+      console.error(`Error tuning occluder scale (node: ${mapping.occluder})`, e);
+    }
   };
 
   const handleSizeSelect = (sizeId: string) => {
@@ -315,7 +329,7 @@ export const DeepARVTO = () => {
     if (!deepARRef.current || !effect) return;
     try {
       // Switch to the same effect to reset all parameters to default
-      await deepARRef.current.switchEffect(effect);
+      await deepARRef.current.switchEffect(effect, { slot: 'glasses', face: 0 });
       await applyBaseScale(nodeMapping);
       setActiveFrameColor(null);
       setActiveLensColor(null);

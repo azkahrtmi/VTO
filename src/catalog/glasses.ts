@@ -20,6 +20,11 @@ export const GLASSES_CATALOG: Glasses[] = [
       lensOuter: "LensOuter",
       rootNode: "coba4_fixed.glb",
       baseScale: 100, // Coba4 requires 100x scale in DeepAR
+      // Perbesar occluder agar gagang tertutup rambut saat kepala menunduk.
+      // Tuning: naikkan y jika gagang masih terlihat di atas rambut,
+      // turunkan jika frame depan ikut "tergigit".
+      occluder: "Head",
+      occluderScale: { x: 1.04, y: 1.12, z: 1.0 },
     },
   },
   // {

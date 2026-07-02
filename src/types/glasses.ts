@@ -20,6 +20,13 @@ export interface NodeMapping {
   /** Nama root node — untuk scale/PD adjustment */
   rootNode: string;
   baseScale?: number; // Optional base scale (e.g. 100 for imported models)
+  /** Nama node head occluder (mesh kepala tak terlihat), mis. "Head" */
+  occluder?: string;
+  /**
+   * Skala tambahan occluder. Perbesar sumbu y agar gagang tertutup
+   * rambut/kepala saat menunduk. Hanya diterapkan jika `occluder` diisi.
+   */
+  occluderScale?: { x: number; y: number; z: number };
 }
 
 /** Default node mapping (mengikuti standar RayBan DeepAR) */
