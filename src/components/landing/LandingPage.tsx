@@ -6,6 +6,7 @@ import { LandingHero } from './LandingHero';
 import { LandingHighlights } from './LandingHighlights';
 import { LandingNavbar } from './LandingNavbar';
 import { LandingTopBar } from './LandingTopBar';
+import { Reveal } from './Reveal';
 
 type LandingPageProps = {
   onStartTryOn: () => void;
@@ -33,10 +34,10 @@ export function LandingPage({
           <LandingHero onStartTryOn={onStartTryOn} onNavigateShop={onNavigateShop} />
           <LandingHighlights />
         </div>
-        <LandingCollections />
+        <Reveal><LandingCollections /></Reveal>
         <LandingExtendedSections />
-        <LandingDiscover onNavigateShop={onNavigateShop} />
-        <LandingFooter />
+        <Reveal><LandingDiscover onNavigateShop={onNavigateShop} /></Reveal>
+        <Reveal delay={0.05}><LandingFooter /></Reveal>
       </div>
     </div>
   );

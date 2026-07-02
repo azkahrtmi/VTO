@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { RefreshCw, X } from 'lucide-react';
-import { DeepARVTO } from './components/DeepARVTO';
+import { useState, useEffect, useCallback } from 'react';
+import { RefreshCw } from 'lucide-react';
+import { VTOPage } from './components/VTOPage';
 import { LandingPage } from './components/landing/LandingPage';
 import { LoginModal } from './components/landing/LoginModal';
 import { EyeglassesPage } from './components/eyeglasses/EyeglassesPage';
@@ -17,9 +17,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>(getCurrentPage);
   const [loginOpen, setLoginOpen] = useState(false);
 
-  const { 
-    selectedGlassesId, setSelectedGlassesId, glassesCatalog, loadCatalogFromOdoo
-  } = useAppStore();
+  const { loadCatalogFromOdoo } = useAppStore();
 
   useEffect(() => {
     loadCatalogFromOdoo();
@@ -58,13 +56,36 @@ function App() {
     }
   };
 
-  const handleClose = () => {
-    window.location.reload();
-  };
+  const handleClose = useCallback(() => {
+    setStarted(false);
+  }, []);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (started) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [started]);
+
+  // Close modal on Escape key
+  useEffect(() => {
+    if (!started) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [started, handleClose]);
 
   return (
     <div className="vto-app">
-      {!started && !loading && currentPage === 'landing' && (
+      {/* Pages stay mounted and visible so backdrop-filter on the modal overlay blurs them */}
+      {!loading && currentPage === 'landing' && (
         <LandingPage
           onStartTryOn={handleStart}
           onNavigateShop={() => navigateTo('eyeglasses')}
@@ -73,7 +94,7 @@ function App() {
         />
       )}
 
-      {!started && !loading && currentPage === 'eyeglasses' && (
+      {!loading && currentPage === 'eyeglasses' && (
         <EyeglassesPage
           onNavigateHome={() => navigateTo('landing')}
           onNavigateShop={() => navigateTo('eyeglasses')}
@@ -90,41 +111,8 @@ function App() {
         </div>
       )}
 
-      {/* VTO Modal Overlay */}
-      {started && (
-        <div className="vto-modal-overlay">
-          <div className="vto-modal">
-            {/* Modal Header */}
-            <div className="vto-modal-header">
-              <h3 className="vto-modal-title">Virtual Try-On</h3>
-              <button className="vto-modal-close" onClick={handleClose}>
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Camera Feed Container */}
-            <div className="vto-modal-camera">
-              <DeepARVTO />
-            </div>
-
-            {/* Glasses Selector */}
-            <div className="vto-modal-selector">
-              <div className="vto-modal-glasses-row">
-                {glassesCatalog.map((item) => (
-                  <button 
-                    key={item.id}
-                    className={`vto-glass-chip ${selectedGlassesId === item.id ? 'active' : ''}`}
-                    onClick={() => setSelectedGlassesId(item.id)}
-                  >
-                    <div className="vto-glass-swatch" style={{ backgroundColor: item.color }}></div>
-                    <span>{item.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* VTO Full Page */}
+      {started && <VTOPage onClose={handleClose} />}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { Heart } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 
 type CollectionItem = {
   brand: string;
@@ -69,6 +70,9 @@ export function LandingCollections() {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragState = useRef({ startX: 0, startScrollLeft: 0 });
   const isResettingRef = useRef(false);
+  const isHoveringRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
+  const reduced = useReducedMotion();
 
   const getStep = () => (window.innerWidth <= 920 ? 356 : 427);
   const getSetWidth = () => getStep() * collections.length;
@@ -86,6 +90,21 @@ export function LandingCollections() {
     window.addEventListener("resize", resetToMiddle);
     return () => window.removeEventListener("resize", resetToMiddle);
   }, []);
+
+  // Auto-marquee — pauses on hover/drag, respects prefers-reduced-motion
+  useEffect(() => {
+    if (reduced) return;
+    const tick = () => {
+      if (!isDragging && !isHoveringRef.current && trackRef.current) {
+        trackRef.current.scrollLeft += 0.7;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [isDragging, reduced]);
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!trackRef.current) return;
@@ -159,19 +178,20 @@ export function LandingCollections() {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onScroll={handleScroll}
+        onMouseEnter={() => { isHoveringRef.current = true; }}
+        onMouseLeave={() => { isHoveringRef.current = false; }}
       >
         <div className="flex w-max gap-4">
           {loopedCollections.map((item, index) => (
-            <article
+            <motion.article
               key={`${item.brand}-${item.model}-${index}`}
               className="w-[411px] flex-none snap-start rounded-[20px] bg-[#f6f5f4] p-[6px] max-[920px]:w-[340px] max-[920px]:p-5"
-              style={{
-                transform:
-                  currentIndex === index % collections.length
-                    ? "scale(1)"
-                    : "scale(0.985)",
+              animate={{
+                scale: currentIndex === index % collections.length ? 1 : 0.985,
                 opacity: currentIndex === index % collections.length ? 1 : 0.96,
               }}
+              whileHover={{ y: -8, scale: 1.01, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.3 }}
             >
               <div className="mb-6 flex items-start justify-between">
                 <button
@@ -224,7 +244,7 @@ export function LandingCollections() {
                   ))}
                 </div>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
       </div>
