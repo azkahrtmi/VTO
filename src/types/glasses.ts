@@ -31,6 +31,26 @@ export const DEFAULT_NODE_MAPPING: NodeMapping = {
   baseScale: 1
 };
 
+/**
+ * Varian ukuran untuk satu model kacamata (mis. S/M/L atau 52mm/55mm).
+ * Jika sebuah Glasses punya lebih dari satu entri di `sizes`, UI akan
+ * menampilkan tombol pilihan ukuran. Jika hanya satu (atau tidak ada),
+ * ukuran asli model langsung dipakai tanpa pilihan.
+ */
+export interface GlassesSize {
+  /** Identifier unik varian, mis. "52" atau "M" */
+  id: string;
+  /** Label yang ditampilkan di tombol pilihan, mis. "52mm" atau "Medium" */
+  label: string;
+  sku?: string;
+  deeparEffect?: string;
+  lensWidthMm?: number;
+  bridgeMm?: number;
+  templeMm?: number;
+  frameWidthMm?: number;
+  nodeMapping?: NodeMapping;
+}
+
 export class Glasses {
   id: string = '';
   sku: string = '';
@@ -53,6 +73,8 @@ export class Glasses {
   pdCalibrationMm?: number;
   /** Node mapping untuk DeepAR — konfigurasi nama node per model */
   nodeMapping?: NodeMapping;
+  /** Varian ukuran yang tersedia untuk model ini. Jika >1, UI menampilkan tombol pilihan ukuran. */
+  sizes?: GlassesSize[];
 }
 
 export const VTO_CHECK = true;

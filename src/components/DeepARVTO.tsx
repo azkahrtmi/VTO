@@ -3,34 +3,23 @@ import { useEffect, useRef, useState } from "react";
 import * as deepar from "deepar";
 import { useAppStore } from "../store";
 import { DEFAULT_NODE_MAPPING } from "../types/glasses";
-import type { NodeMapping } from "../types/glasses";
+import type { GlassesSize, NodeMapping } from "../types/glasses";
 import { AutoPDOverlay } from "./AutoPDOverlay";
 
 const LICENSE_KEY = import.meta.env.VITE_DEEPAR_LICENSE_KEY || "";
-// Average adult PD — glasses at 1.0 scale when user PD = this value
-const REFERENCE_PD_MM = 75;
-const MIN_PD_MM = 45;
-const MAX_PD_MM = 75;
-const PD_SCALE_STRENGTH = 0.45;
-const MAX_PD_SCALE_MULTIPLIER = 1.25;
-
-const clampPd = (value: number) =>
-  Math.min(MAX_PD_MM, Math.max(MIN_PD_MM, value));
-
-const roundPd = (value: number) => Math.round(value * 10) / 10;
 
 export const DeepARVTO = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const deepARRef = useRef<any>(null);
   const initializingRef = useRef(false);
+  const prevGlassesIdRef = useRef<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Customization States
-  const [pdMm, setPdMm] = useState(REFERENCE_PD_MM);
-  const [pdInputValue, setPdInputValue] = useState(String(REFERENCE_PD_MM));
   const [activeFrameColor, setActiveFrameColor] = useState<string | null>(null);
   const [activeLensColor, setActiveLensColor] = useState<string | null>(null);
+  const [activeSizeId, setActiveSizeId] = useState<string | null>(null);
   const [isPDCheckerOpen, setIsPDCheckerOpen] = useState(false);
 
   const { selectedGlassesId, glassesCatalog } = useAppStore();
@@ -38,13 +27,32 @@ export const DeepARVTO = () => {
     (g) => g.id === selectedGlassesId,
   );
 
-  // Base PD untuk kacamata yang sedang dipilih (framePdMm > pdCalibrationMm > default)
-  const getBasePdMm = (glasses?: typeof selectedGlasses) =>
-    glasses?.framePdMm || glasses?.pdCalibrationMm || REFERENCE_PD_MM;
+  // Pilih varian ukuran aktif (jika model punya beberapa ukuran)
+  const getSizeVariant = (
+    glasses?: typeof selectedGlasses,
+    sizeId?: string | null,
+  ): GlassesSize | undefined => {
+    if (!glasses?.sizes || glasses.sizes.length === 0) return undefined;
+    return glasses.sizes.find((s) => s.id === sizeId) || glasses.sizes[0];
+  };
 
-  // Resolve node mapping: use model-specific mapping, or fall back to defaults
+  const activeSizeVariant = getSizeVariant(selectedGlasses, activeSizeId);
+
+  // Resolve node mapping: varian ukuran > model > default
   const nodeMapping: NodeMapping =
-    selectedGlasses?.nodeMapping || DEFAULT_NODE_MAPPING;
+    activeSizeVariant?.nodeMapping ||
+    selectedGlasses?.nodeMapping ||
+    DEFAULT_NODE_MAPPING;
+
+  // Spesifikasi ukuran fisik frame: varian ukuran > model
+  const frameLensWidthMm =
+    activeSizeVariant?.lensWidthMm ?? selectedGlasses?.lensWidthMm;
+  const frameBridgeMm =
+    activeSizeVariant?.bridgeMm ?? selectedGlasses?.bridgeMm;
+  const frameTempleMm =
+    activeSizeVariant?.templeMm ?? selectedGlasses?.templeMm;
+  const frameWidthMm =
+    activeSizeVariant?.frameWidthMm ?? selectedGlasses?.frameWidthMm;
 
   // Initialize DeepAR
   useEffect(() => {
@@ -97,38 +105,51 @@ export const DeepARVTO = () => {
     };
   }, []);
 
-  // Switch effect when selected glasses changes
+  // Switch effect when selected glasses (or its size variant) changes
   useEffect(() => {
     if (!deepARRef.current || !selectedGlasses) return;
 
-    if (selectedGlasses.deeparEffect) {
-      const switchEffect = async () => {
-        try {
-          // Load the effect for up to 4 faces
-          const promises = [];
-          for (let i = 0; i < 4; i++) {
-            promises.push(
-              deepARRef.current.switchEffect(selectedGlasses.deeparEffect, {
-                slot: `glasses_face_${i}`,
-                face: i,
-              }),
-            );
-          }
-          await Promise.all(promises);
-
-          // Reset customization when switching glasses
-          const basePdMm = getBasePdMm(selectedGlasses);
-          setPdMm(basePdMm);
-          setPdInputValue(String(basePdMm));
-          setActiveFrameColor(null);
-          setActiveLensColor(null);
-        } catch (err) {
-          console.error("DeepAR switchEffect error:", err);
-        }
-      };
-      switchEffect();
+    // Saat ganti model, reset ke ukuran pertama yang tersedia
+    let sizeId = activeSizeId;
+    if (prevGlassesIdRef.current !== selectedGlassesId) {
+      sizeId = selectedGlasses.sizes?.[0]?.id ?? null;
+      setActiveSizeId(sizeId);
+      prevGlassesIdRef.current = selectedGlassesId;
     }
-  }, [selectedGlassesId, selectedGlasses]);
+
+    const sizeVariant = getSizeVariant(selectedGlasses, sizeId);
+    const effect = sizeVariant?.deeparEffect || selectedGlasses.deeparEffect;
+    const mapping =
+      sizeVariant?.nodeMapping || selectedGlasses.nodeMapping || DEFAULT_NODE_MAPPING;
+
+    if (!effect) return;
+
+    const switchEffect = async () => {
+      try {
+        // Load the effect for up to 4 faces
+        const promises = [];
+        for (let i = 0; i < 4; i++) {
+          promises.push(
+            deepARRef.current.switchEffect(effect, {
+              slot: `glasses_face_${i}`,
+              face: i,
+            }),
+          );
+        }
+        await Promise.all(promises);
+
+        // Tampilkan frame pada ukuran asli (sesuai baseScale model)
+        await applyBaseScale(mapping);
+
+        // Reset customization when switching glasses/size
+        setActiveFrameColor(null);
+        setActiveLensColor(null);
+      } catch (err) {
+        console.error("DeepAR switchEffect error:", err);
+      }
+    };
+    switchEffect();
+  }, [selectedGlassesId, selectedGlasses, activeSizeId]);
 
   // Handlers for DeepAR Control
   const handleFrameColor = async (
@@ -250,97 +271,42 @@ export const DeepARVTO = () => {
     }
   };
 
-  const updateScale = async (currentPdMm: number) => {
+  // Terapkan ukuran asli frame (sesuai baseScale model), tanpa adjustment PD
+  const applyBaseScale = async (mapping: NodeMapping) => {
     if (!deepARRef.current) return;
-    // Base PD diambil dari ukuran asli kacamata (framePdMm = lensWidth + bridge).
-    // PD user di bawah/sama dengan base -> ukuran 100% (base).
-    // PD user di atas base -> kacamata membesar, dengan kurva damped.
-    const physicalFrameScale = nodeMapping.baseScale || 1.0;
-    const basePdMm = getBasePdMm(selectedGlasses);
-    const rawPdMultiplier = currentPdMm / basePdMm;
-    const pdMultiplier = Math.min(
-      MAX_PD_SCALE_MULTIPLIER,
-      Math.max(1, rawPdMultiplier ** PD_SCALE_STRENGTH),
-    );
-    const pdScale = pdMultiplier * physicalFrameScale;
+    const baseScale = mapping.baseScale || 1.0;
     try {
-      // Uniform scale — X, Y, Z all change equally (not just stretching X)
       await deepARRef.current.changeParameterVector(
-        nodeMapping.rootNode,
+        mapping.rootNode,
         "",
         "scale",
-        pdScale,
-        pdScale,
-        pdScale,
+        baseScale,
+        baseScale,
+        baseScale,
         0,
       );
     } catch (e) {
-      console.error(`Error changing scale (node: ${nodeMapping.rootNode})`, e);
+      console.error(`Error setting base scale (node: ${mapping.rootNode})`, e);
     }
   };
 
-  const applyPdValue = (value: number) => {
-    if (!Number.isFinite(value)) return;
-    const newPdMm = roundPd(clampPd(value));
-    setPdMm(newPdMm);
-    setPdInputValue(String(newPdMm));
-    updateScale(newPdMm);
-  };
-
-  const handlePdSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    applyPdValue(parseFloat(e.target.value));
-  };
-
-  const handlePdInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const nextValue = e.target.value;
-    setPdInputValue(nextValue);
-
-    const parsedValue = parseFloat(nextValue);
-    if (
-      Number.isFinite(parsedValue) &&
-      parsedValue >= MIN_PD_MM &&
-      parsedValue <= MAX_PD_MM
-    ) {
-      const newPdMm = roundPd(parsedValue);
-      setPdMm(newPdMm);
-      updateScale(newPdMm);
-    }
-  };
-
-  const commitPdInput = () => {
-    const parsedValue = parseFloat(pdInputValue);
-    if (!Number.isFinite(parsedValue)) {
-      setPdInputValue(String(pdMm));
-      return;
-    }
-    applyPdValue(parsedValue);
-  };
-
-  const handlePdInputKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (e.key === "Enter") {
-      e.currentTarget.blur();
-    }
+  const handleSizeSelect = (sizeId: string) => {
+    if (sizeId === activeSizeId) return;
+    setActiveSizeId(sizeId);
   };
 
   const handleReset = async () => {
-    if (!deepARRef.current || !selectedGlasses?.deeparEffect) return;
+    const effect = activeSizeVariant?.deeparEffect || selectedGlasses?.deeparEffect;
+    if (!deepARRef.current || !effect) return;
     try {
       // Switch to the same effect to reset all parameters to default
-      await deepARRef.current.switchEffect(selectedGlasses.deeparEffect);
-      const basePdMm = getBasePdMm(selectedGlasses);
-      setPdMm(basePdMm);
-      setPdInputValue(String(basePdMm));
+      await deepARRef.current.switchEffect(effect);
+      await applyBaseScale(nodeMapping);
       setActiveFrameColor(null);
       setActiveLensColor(null);
     } catch (e) {
       console.error("Error resetting effect", e);
     }
-  };
-
-  const handlePDAutoDetected = (detectedPdMm: number) => {
-    applyPdValue(detectedPdMm);
   };
 
   return (
@@ -356,6 +322,42 @@ export const DeepARVTO = () => {
               Reset
             </button>
           </div>
+
+          {(frameLensWidthMm || frameBridgeMm || frameWidthMm) && (
+            <div className="control-group">
+              <span className="control-label">Ukuran Frame:</span>
+              <div className="frame-specs">
+                {frameLensWidthMm && frameBridgeMm && (
+                  <span className="spec-chip spec-chip-marking">
+                    {frameLensWidthMm}&#9633;{frameBridgeMm}
+                    {frameTempleMm ? `-${frameTempleMm}` : ""} mm
+                  </span>
+                )}
+                {frameWidthMm && (
+                  <span className="spec-chip">
+                    Lebar total {frameWidthMm} mm
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {selectedGlasses?.sizes && selectedGlasses.sizes.length > 1 && (
+            <div className="control-group">
+              <span className="control-label">Pilih Ukuran:</span>
+              <div className="size-buttons">
+                {selectedGlasses.sizes.map((size) => (
+                  <button
+                    key={size.id}
+                    onClick={() => handleSizeSelect(size.id)}
+                    className={`size-btn ${activeSizeId === size.id ? "active" : ""}`}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="control-group">
             <span className="control-label">Frame Color:</span>
@@ -418,48 +420,14 @@ export const DeepARVTO = () => {
           </div>
 
           <div className="control-group">
-            <div className="pd-label-row">
-              <span className="control-label">Pupillary Distance</span>
-              <span className="pd-value-badge">{pdMm} mm</span>
-            </div>
-            <div className="pd-controls-row">
-              <input
-                type="range"
-                min={MIN_PD_MM}
-                max={MAX_PD_MM}
-                step="0.1"
-                value={pdMm}
-                onChange={handlePdSliderChange}
-                className="pd-slider"
-              />
-              <div className="pd-manual-input-wrap">
-                <input
-                  type="number"
-                  min={MIN_PD_MM}
-                  max={MAX_PD_MM}
-                  step="0.1"
-                  value={pdInputValue}
-                  onChange={handlePdInputChange}
-                  onBlur={commitPdInput}
-                  onKeyDown={handlePdInputKeyDown}
-                  className="pd-manual-input"
-                  aria-label="Input manual pupillary distance"
-                />
-                <span>mm</span>
-              </div>
-              <button
-                onClick={() => setIsPDCheckerOpen(true)}
-                className="auto-detect-btn"
-                title="Deteksi PD otomatis menggunakan kamera"
-              >
-                PD
-              </button>
-            </div>
-            <div className="pd-range-labels">
-              <span>45 mm</span>
-              <span>62 mm</span>
-              <span>75 mm</span>
-            </div>
+            <span className="control-label">Pupillary Distance (PD)</span>
+            <button
+              onClick={() => setIsPDCheckerOpen(true)}
+              className="pd-detect-btn"
+              title="Deteksi PD menggunakan kamera"
+            >
+              Ukur PD dengan Kamera
+            </button>
           </div>
         </div>
       )}
@@ -481,10 +449,7 @@ export const DeepARVTO = () => {
       )}
 
       {isPDCheckerOpen && (
-        <AutoPDOverlay
-          onPDDetected={handlePDAutoDetected}
-          onClose={() => setIsPDCheckerOpen(false)}
-        />
+        <AutoPDOverlay onClose={() => setIsPDCheckerOpen(false)} />
       )}
 
       <style
@@ -606,104 +571,71 @@ export const DeepARVTO = () => {
           transform: scale(1.05);
           border-color: rgba(255,255,255,0.5);
         }
-        .pd-label-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .pd-value-badge {
-          background: rgba(139, 92, 246, 0.2);
-          color: #c4b5fd;
-          font-size: 0.85rem;
-          font-weight: 700;
-          padding: 2px 10px;
-          border-radius: 20px;
-          border: 1px solid rgba(139, 92, 246, 0.4);
-          font-variant-numeric: tabular-nums;
-        }
-        .pd-slider {
+        .pd-detect-btn {
           width: 100%;
-          accent-color: #8b5cf6;
-          margin-top: 6px;
-          cursor: pointer;
-        }
-        .pd-controls-row {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          margin-top: 6px;
-        }
-        .pd-controls-row .pd-slider {
-          flex: 1;
-          margin-top: 0;
-          min-width: 0;
-        }
-        .pd-manual-input-wrap {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          height: 40px;
-          padding: 0 8px;
-          border: 1px solid rgba(139, 92, 246, 0.35);
-          border-radius: 8px;
-          background: rgba(15, 23, 42, 0.9);
-          color: #a78bfa;
-          font-size: 0.75rem;
-          font-weight: 700;
-          flex-shrink: 0;
-        }
-        .pd-manual-input {
-          width: 58px;
-          border: 0;
-          outline: 0;
-          background: transparent;
-          color: #f8fafc;
-          font: inherit;
-          font-size: 0.9rem;
-          font-variant-numeric: tabular-nums;
-        }
-        .pd-manual-input::-webkit-inner-spin-button,
-        .pd-manual-input::-webkit-outer-spin-button {
-          margin: 0;
-        }
-        .auto-detect-btn {
           background: rgba(139, 92, 246, 0.2);
           border: 1px solid rgba(139, 92, 246, 0.4);
           color: #c4b5fd;
-          width: 40px;
-          height: 40px;
+          padding: 10px 12px;
           border-radius: 8px;
-          font-size: 1.2rem;
+          font-size: 0.85rem;
+          font-weight: 600;
           cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
           transition: all 0.2s;
-          flex-shrink: 0;
+          margin-top: 6px;
         }
-        .auto-detect-btn:hover {
+        .pd-detect-btn:hover {
           background: rgba(139, 92, 246, 0.3);
           border-color: rgba(139, 92, 246, 0.6);
-          transform: scale(1.05);
         }
-        .auto-detect-btn:active {
-          transform: scale(0.95);
+        .pd-detect-btn:active {
+          transform: scale(0.98);
         }
-        .pd-range-labels {
+        .size-buttons {
           display: flex;
-          justify-content: space-between;
-          font-size: 0.7rem;
-          color: #64748b;
-          margin-top: 2px;
-          padding: 0 2px;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 6px;
         }
-        @media (max-width: 420px) {
-          .pd-controls-row {
-            flex-wrap: wrap;
-          }
-          .pd-controls-row .pd-slider {
-            flex-basis: 100%;
-          }
+        .size-btn {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          color: #cbd5e1;
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .size-btn:hover {
+          border-color: rgba(139, 92, 246, 0.5);
+          color: #f8fafc;
+        }
+        .size-btn.active {
+          background: rgba(139, 92, 246, 0.25);
+          border-color: #8b5cf6;
+          color: #c4b5fd;
+        }
+        .frame-specs {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 6px;
+        }
+        .spec-chip {
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #cbd5e1;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 0.8rem;
+          font-variant-numeric: tabular-nums;
+        }
+        .spec-chip-marking {
+          color: #f8fafc;
+          font-weight: 600;
+          letter-spacing: 0.5px;
         }
 
         .deepar-loading {
