@@ -535,24 +535,22 @@ img {
   align-items: center;
   justify-content: space-between;
   padding: 0 1.5rem;
-  background: #1d2427;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: #ffffff;
+  border-bottom: 1px solid rgba(29, 36, 39, 0.1);
   flex-shrink: 0;
 }
 
 .vto-page-logo {
   height: 26px;
-  filter: invert(1);
-  opacity: 0.9;
 }
 
 .vto-page-back {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(247, 241, 232, 0.05);
-  border: 1px solid rgba(247, 241, 232, 0.12);
-  color: rgba(247, 241, 232, 0.45);
+  background: transparent;
+  border: 1px solid rgba(29, 36, 39, 0.2);
+  color: #1d2427;
   padding: 6px 14px;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -562,9 +560,9 @@ img {
 }
 
 .vto-page-back:hover {
-  color: #f7f1e8;
-  border-color: rgba(247, 241, 232, 0.25);
-  background: rgba(247, 241, 232, 0.08);
+  color: #084D26;
+  border-color: #084D26;
+  background: rgba(8, 77, 38, 0.06);
 }
 
 .vto-page-body {
