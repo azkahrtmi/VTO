@@ -29,7 +29,6 @@ export interface OdooGlassesProduct {
   image_url: string;
   model_3d_url: string;
   deepar_effect_url: string;
-  engine: 'mindar' | 'deepar';
   category: 'optical' | 'sunglasses' | 'sports';
   is_featured: boolean;
 }

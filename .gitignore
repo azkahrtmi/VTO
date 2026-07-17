@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+gambar
 node_modules
 dist
 dist-ssr
@@ -14,7 +15,7 @@ dist-ssr
 .env
 VTO_Technical_Briefing.docx
 ped.txt
-
+DEMO_FIX_PLAN.md
 
 # Editor directories and files
 .vscode/*
@@ -29,3 +30,8 @@ ped.txt
 
 # Documentation
 EXPLANATION_ODOO_HEADLESS.md
+
+# DeepAR Studio — auto-generated project workspace files (not needed in production)
+public/deparstudio.deeparproj/
+*.deeparcache
+*.deeparimport

@@ -25,6 +25,32 @@
   .animate-content-swap {
     animation: fadeInSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
+
+  /* Auto PD Overlay animations */
+  @keyframes autoPDFadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes autoPDSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-auto-pd-fade-in {
+    animation: autoPDFadeIn 0.3s ease-out forwards;
+  }
+
+  .animate-auto-pd-spin {
+    animation: autoPDSpin 0.8s linear infinite;
+  }
 }
 
 html,
@@ -36,7 +62,7 @@ body,
 
 body {
   margin: 0;
-  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  font-family: "Poppins", "Segoe UI", sans-serif;
   background: #f1f1f1;
   color: #f8fafc;
 }
@@ -236,7 +262,7 @@ img {
   background: #ffffff;
   color: #123b32;
   box-shadow: 0 24px 70px rgba(10, 31, 27, 0.18);
-  font-family: 'Outfit', 'Poppins', sans-serif;
+  font-family: "Outfit", "Poppins", sans-serif;
 }
 
 .login-modal-overlay.is-opening {
@@ -291,7 +317,11 @@ img {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(7, 22, 18, 0.58), rgba(7, 22, 18, 0.1));
+  background: linear-gradient(
+    90deg,
+    rgba(7, 22, 18, 0.58),
+    rgba(7, 22, 18, 0.1)
+  );
 }
 
 .login-modal-hero-copy {
@@ -481,21 +511,70 @@ img {
 }
 
 /* ========================================
-   VTO Modal (Essilor-style)
+   VTO Full Page (FittingBox-style)
    ======================================== */
 
-/* Dark overlay behind modal */
-.vto-modal-overlay {
+@keyframes vto-page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.vto-page {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
+  background: #111917;
+  display: flex;
+  flex-direction: column;
+  animation: vto-page-in 0.2s ease both;
+}
+
+.vto-page-header {
+  height: 56px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(29, 36, 39, 0.1);
+  flex-shrink: 0;
 }
+
+.vto-page-logo {
+  height: 26px;
+}
+
+.vto-page-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid rgba(29, 36, 39, 0.2);
+  color: #1d2427;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vto-page-back:hover {
+  color: #084D26;
+  border-color: #084D26;
+  background: rgba(8, 77, 38, 0.06);
+}
+
+.vto-page-body {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ========================================
+   VTO Modal (legacy — kept for reference)
+   ======================================== */
 
 /* The modal container */
 .vto-modal {
@@ -548,93 +627,12 @@ img {
   color: white;
 }
 
-/* Engine Switcher (MindAR / DeepAR) */
-.engine-switcher {
-  display: flex;
-  gap: 0;
-  padding: 0.5rem 1.25rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.engine-tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  color: #94a3b8;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  letter-spacing: 0.02em;
-}
-
-.engine-tab:first-child {
-  border-radius: 8px 0 0 8px;
-  border-right: none;
-}
-
-.engine-tab:last-child {
-  border-radius: 0 8px 8px 0;
-}
-
-.engine-tab:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-}
-
-.engine-tab.active {
-  background: rgba(12, 114, 135, 0.2);
-  border-color: #0c7287;
-  color: #67e8f9;
-}
-
-.engine-tab:last-child.active {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: #8B5CF6;
-  color: #c4b5fd;
-}
-
-.engine-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.mindar-dot {
-  background: #0c7287;
-  box-shadow: 0 0 6px rgba(12, 114, 135, 0.5);
-}
-
-.deepar-dot {
-  background: #8B5CF6;
-  box-shadow: 0 0 6px rgba(139, 92, 246, 0.5);
-}
-
 /* Camera feed area */
 .vto-modal-camera {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  /* background removed so MindAR video (z-index: -2) can show through */
-}
-
-/* MindAR container fills the camera area */
-.mindar-container {
-  position: absolute;
-  inset: 0;
-}
-
-.mindar-container a-scene {
-  width: 100% !important;
-  height: 100% !important;
 }
 
 /* Glasses selector row */
@@ -701,14 +699,14 @@ img {
     padding: 0;
     align-items: stretch;
   }
-  
+
   .vto-modal {
     max-width: 100%;
     max-height: 100%;
     border-radius: 0;
     height: 100%;
   }
-  
+
   .vto-modal-camera {
     flex: 1;
     aspect-ratio: unset;
