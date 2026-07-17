@@ -92,11 +92,6 @@
                 <field name="brand"/>
                 <filter name="published" string="Published" domain="[('is_published','=',True)]"/>
                 <filter name="featured" string="Featured" domain="[('is_featured','=',True)]"/>
-                <group expand="0" string="Group By">
-                    <filter name="group_brand" string="Brand" context="{'group_by': 'brand'}"/>
-                    <filter name="group_category" string="Kategori" context="{'group_by': 'category'}"/>
-                    <filter name="group_engine" string="AR Engine" context="{'group_by': 'engine'}"/>
-                </group>
             </search>
         </field>
     </record>

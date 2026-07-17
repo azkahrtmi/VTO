@@ -34,6 +34,14 @@ function App() {
     [glassesCatalog, arEngine]
   );
 
+  useEffect(() => {
+    if (selectedGlassesId) return;
+    const firstOfEngine = glassesCatalog.find(g => g.engine === arEngine);
+    if (firstOfEngine) {
+      setSelectedGlassesId(firstOfEngine.id);
+    }
+  }, [selectedGlassesId, glassesCatalog, arEngine, setSelectedGlassesId]);
+
   const handleEngineSwitch = (engine: AREngine) => {
     if (engine === arEngine) return;
     setArEngine(engine);

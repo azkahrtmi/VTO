@@ -20,6 +20,26 @@ interface AppState {
   loadCatalogFromOdoo: () => Promise<void>;
 }
 
+const normalizeAssetUrl = (value?: string): string => {
+  if (!value) return '';
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
+    return trimmed;
+  }
+  return `/${trimmed}`;
+};
+
+const mapOdooToGlasses = (item: OdooGlassesProduct): Glasses => ({
+  id: `odoo-${item.id}`,
+  name: item.name,
+  sku: normalizeAssetUrl(item.model_3d_url) || normalizeAssetUrl(item.deepar_effect_url),
+  color: item.color_hex || '#000000',
+  type: 'local',
+  engine: item.engine,
+  deeparEffect: normalizeAssetUrl(item.deepar_effect_url),
+});
+
 export const useAppStore = create<AppState>((set) => ({
   showDots: true,
   showGlasses: true,
@@ -40,8 +60,13 @@ export const useAppStore = create<AppState>((set) => ({
     try {
       const odooGlasses = await fetchGlassesFromOdoo();
       if (odooGlasses && odooGlasses.length > 0) {
-        // Map Odoo data to Glasses type
-        set({ odooProducts: odooGlasses });
+        const mappedCatalog = odooGlasses
+          .map(mapOdooToGlasses)
+          .filter((g) => g.sku);
+        set({
+          odooProducts: odooGlasses,
+          glassesCatalog: [...mappedCatalog, ...GLASSES_CATALOG],
+        });
       }
     } catch (error) {
       console.error('Failed to load catalog from Odoo, using local fallback:', error);
