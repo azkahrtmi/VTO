@@ -20,6 +20,25 @@ const loadStoredPD = (): StoredPD | null => {
   }
 };
 
+const normalizeAssetUrl = (value?: string): string => {
+  if (!value) return '';
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
+    return trimmed;
+  }
+  return `/${trimmed}`;
+};
+
+const mapOdooToGlasses = (item: OdooGlassesProduct): Glasses => ({
+  id: `odoo-${item.id}`,
+  name: item.name,
+  sku: normalizeAssetUrl(item.model_3d_url) || normalizeAssetUrl(item.deepar_effect_url),
+  color: item.color_hex || '#000000',
+  type: 'local',
+  deeparEffect: normalizeAssetUrl(item.deepar_effect_url),
+});
+
 interface AppState {
   showDots: boolean;
   showGlasses: boolean;
@@ -40,6 +59,8 @@ interface AppState {
   clearPDResult: () => void;
   loadCatalogFromOdoo: () => Promise<void>;
 }
+
+const storedPD = loadStoredPD();
 
 export const useAppStore = create<AppState>((set) => ({
   showDots: true,
@@ -87,7 +108,7 @@ export const useAppStore = create<AppState>((set) => ({
       if (odooGlasses && odooGlasses.length > 0) {
         const mappedCatalog = odooGlasses
           .map(mapOdooToGlasses)
-          .filter((g) => g.sku);
+          .filter((g): g is Glasses => Boolean(g.sku));
         set({
           odooProducts: odooGlasses,
           glassesCatalog: [...mappedCatalog, ...GLASSES_CATALOG],
