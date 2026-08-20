@@ -41,8 +41,6 @@ interface AppState {
   loadCatalogFromOdoo: () => Promise<void>;
 }
 
-const storedPD = loadStoredPD();
-
 export const useAppStore = create<AppState>((set) => ({
   showDots: true,
   showGlasses: true,
@@ -87,8 +85,13 @@ export const useAppStore = create<AppState>((set) => ({
     try {
       const odooGlasses = await fetchGlassesFromOdoo();
       if (odooGlasses && odooGlasses.length > 0) {
-        // Map Odoo data to Glasses type
-        set({ odooProducts: odooGlasses });
+        const mappedCatalog = odooGlasses
+          .map(mapOdooToGlasses)
+          .filter((g) => g.sku);
+        set({
+          odooProducts: odooGlasses,
+          glassesCatalog: [...mappedCatalog, ...GLASSES_CATALOG],
+        });
       }
     } catch (error) {
       console.error('Failed to load catalog from Odoo, using local fallback:', error);

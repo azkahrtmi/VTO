@@ -23,6 +23,21 @@ function App() {
     loadCatalogFromOdoo();
   }, [loadCatalogFromOdoo]);
 
+  // Filter catalog based on active engine
+  const filteredCatalog = useMemo(() => 
+    glassesCatalog.filter(g => g.engine === arEngine),
+    [glassesCatalog, arEngine]
+  );
+
+  const handleEngineSwitch = (engine: AREngine) => {
+    if (engine === arEngine) return;
+    setArEngine(engine);
+    const firstOfEngine = glassesCatalog.find(g => g.engine === engine);
+    if (firstOfEngine) {
+      setSelectedGlassesId(firstOfEngine.id);
+    }
+  };
+
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPage(getCurrentPage());
