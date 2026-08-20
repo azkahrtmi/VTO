@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useEffect, useRef, useState } from "react";
 import * as deepar from "deepar";
+import { ChevronRight } from "lucide-react";
 import { useAppStore } from "../store";
 import { DEFAULT_NODE_MAPPING } from "../types/glasses";
 import type { GlassesSize, NodeMapping } from "../types/glasses";
@@ -37,7 +38,67 @@ export const DeepARVTO = () => {
   const [isPDCheckerOpen, setIsPDCheckerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'frame' | 'size' | 'lens'>('frame');
 
+  // Mobile bottom-sheet (draggable settings panel) state
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragDelta, setDragDelta] = useState(0);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ y: 0, wasOpen: false });
+
+  const handleSheetDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    dragStartRef.current = { y: e.clientY, wasOpen: isSheetOpen };
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    setDragDelta(0);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const handleSheetDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    setDragDelta(e.clientY - dragStartRef.current.y);
+  };
+
+  const handleSheetDragEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+
+    const TAP_THRESHOLD = 6;
+    const DRAG_THRESHOLD = 45;
+    setDragDelta((delta) => {
+      if (Math.abs(delta) < TAP_THRESHOLD) {
+        setIsSheetOpen((prev) => !prev);
+      } else if (dragStartRef.current.wasOpen) {
+        setIsSheetOpen(delta < DRAG_THRESHOLD);
+      } else {
+        setIsSheetOpen(delta < -DRAG_THRESHOLD);
+      }
+      return 0;
+    });
+  };
+
+  // Deteksi apakah daftar kacamata masih bisa digeser (untuk hint scroll)
+  const glassesScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollGlasses, setCanScrollGlasses] = useState(false);
+
+  const checkGlassesScroll = () => {
+    const el = glassesScrollRef.current;
+    if (!el) return;
+    setCanScrollGlasses(el.scrollWidth - el.scrollLeft - el.clientWidth > 8);
+  };
+
   const { selectedGlassesId, setSelectedGlassesId, glassesCatalog, pdResultMm } = useAppStore();
+
+  useEffect(() => {
+    // Tunggu satu frame agar layout sudah final sebelum diukur
+    const raf = requestAnimationFrame(checkGlassesScroll);
+    window.addEventListener('resize', checkGlassesScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', checkGlassesScroll);
+    };
+  }, [glassesCatalog]);
   const selectedGlasses = glassesCatalog.find(
     (g) => g.id === selectedGlassesId,
   );
@@ -363,21 +424,58 @@ export const DeepARVTO = () => {
 
       {/* Controls Panel */}
       {!isLoading && !error && (
-        <div className="deepar-panel">
+        <div
+          className={`deepar-panel ${isSheetOpen ? 'sheet-open' : ''} ${isDragging ? 'dragging' : ''}`}
+          style={
+            isDragging
+              ? {
+                  transform: isSheetOpen
+                    ? `translateY(${dragDelta}px)`
+                    : `translateY(calc(100% - 52px + ${dragDelta}px))`,
+                }
+              : undefined
+          }
+        >
+          {/* Drag handle (mobile bottom-sheet) */}
+          <div
+            className="panel-drag-handle"
+            onPointerDown={handleSheetDragStart}
+            onPointerMove={handleSheetDragMove}
+            onPointerUp={handleSheetDragEnd}
+            onPointerCancel={handleSheetDragEnd}
+          >
+            <span className="drag-bar" />
+            <span className="drag-label">
+              {isSheetOpen ? 'Tutup Pengaturan' : 'Pengaturan Kacamata'}
+            </span>
+          </div>
+
+          <div className="panel-scroll">
           {/* Glasses Selector */}
           <div className="panel-glasses">
             <p className="panel-label">Model Kacamata</p>
-            <div className="glasses-chips">
-              {glassesCatalog.map((item) => (
-                <button
-                  key={item.id}
-                  className={`glasses-chip ${selectedGlassesId === item.id ? 'active' : ''}`}
-                  onClick={() => setSelectedGlassesId(item.id)}
-                >
-                  <span className="glasses-chip-dot" style={{ background: item.color }} />
-                  {item.name}
-                </button>
-              ))}
+            <div className="glasses-scroll-wrap">
+              <div
+                className="glasses-chips"
+                ref={glassesScrollRef}
+                onScroll={checkGlassesScroll}
+              >
+                {glassesCatalog.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`glasses-chip ${selectedGlassesId === item.id ? 'active' : ''}`}
+                    onClick={() => setSelectedGlassesId(item.id)}
+                  >
+                    <span className="glasses-chip-dot" style={{ background: item.color }} />
+                    <span className="glasses-chip-name">{item.name}</span>
+                  </button>
+                ))}
+              </div>
+              {canScrollGlasses && (
+                <div className="glasses-scroll-hint" aria-hidden="true">
+                  <ChevronRight size={14} />
+                </div>
+              )}
             </div>
           </div>
 
@@ -483,6 +581,7 @@ export const DeepARVTO = () => {
               Reset
             </button>
           </div>
+          </div>
         </div>
       )}
 
@@ -528,6 +627,14 @@ export const DeepARVTO = () => {
           flex-shrink: 0;
           background: #1d2427;
           border-left: 1px solid rgba(255,255,255,0.05);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .panel-drag-handle { display: none; }
+        .panel-scroll {
+          flex: 1;
+          min-height: 0;
           display: flex;
           flex-direction: column;
           overflow-y: auto;
@@ -583,6 +690,9 @@ export const DeepARVTO = () => {
           border: 2px solid rgba(247,241,232,0.15);
           flex-shrink: 0;
         }
+        .glasses-chip-name { overflow: hidden; text-overflow: ellipsis; }
+        .glasses-scroll-wrap { position: relative; }
+        .glasses-scroll-hint { display: none; }
 
         /* ── Frame specs ── */
         .panel-specs {
@@ -757,23 +867,114 @@ export const DeepARVTO = () => {
         }
         .deepar-error-hint { color: rgba(247,241,232,0.4); font-size: 0.85em; margin-top: 8px; }
 
-        /* ── Mobile ── */
+        /* ── Mobile: fullscreen camera + draggable bottom-sheet ── */
         @media (max-width: 768px) {
           .deepar-wrapper { flex-direction: column; }
-          .deepar-camera-area { height: 56vw; min-height: 260px; max-height: 55vh; flex: none; }
-          .deepar-panel {
-            width: 100%; flex: 1;
-            border-left: none;
-            border-top: 1px solid rgba(247,241,232,0.06);
+
+          /* Camera fills (almost) the entire screen */
+          .deepar-camera-area {
+            position: absolute;
+            inset: 0;
+            height: 100%;
+            max-height: none;
+            flex: none;
           }
-          .panel-glasses { padding: 12px 16px 10px; }
+
+          /* Panel becomes a draggable bottom sheet overlaying the camera */
+          .deepar-panel {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            width: 100%;
+            max-height: 80vh;
+            border-left: none;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -8px 28px rgba(0,0,0,0.45);
+            z-index: 5;
+            transform: translateY(calc(100% - 52px));
+            transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+          }
+          .deepar-panel.sheet-open { transform: translateY(0); }
+          .deepar-panel.dragging { transition: none; }
+
+          .panel-drag-handle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            height: 52px;
+            flex-shrink: 0;
+            cursor: grab;
+            touch-action: none;
+          }
+          .drag-bar {
+            width: 38px; height: 4px;
+            border-radius: 2px;
+            background: rgba(247,241,232,0.3);
+          }
+          .drag-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: rgba(247,241,232,0.4);
+          }
+
+          .panel-glasses { padding: 4px 0 8px; }
           .glasses-chips {
+            display: flex;
             flex-direction: row;
-            overflow-x: auto; flex-wrap: nowrap;
-            padding-bottom: 4px; scrollbar-width: none;
+            flex-wrap: nowrap;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x proximity;
+            -webkit-overflow-scrolling: touch;
+            padding: 2px 16px 6px;
+            scrollbar-width: none;
           }
           .glasses-chips::-webkit-scrollbar { display: none; }
-          .glasses-chip { flex-shrink: 0; padding: 7px 12px; font-size: 0.78rem; }
+          .glasses-chip {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 6px;
+            width: 60px;
+            flex-shrink: 0;
+            padding: 0;
+            background: none;
+            border: none;
+            scroll-snap-align: start;
+          }
+          .glasses-chip:hover,
+          .glasses-chip.active {
+            background: none;
+            border-color: transparent;
+          }
+          .glasses-chip-dot {
+            width: 52px; height: 52px;
+            margin: 0;
+            transition: all 0.15s;
+          }
+          .glasses-chip.active .glasses-chip-dot {
+            border-color: #a3d9b5;
+            box-shadow: 0 0 0 3px rgba(163,217,181,0.22);
+          }
+          .glasses-chip-name {
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+            max-width: 60px;
+          }
+          .glasses-scroll-hint {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            position: absolute;
+            top: 0; right: 0; bottom: 6px;
+            width: 34px;
+            background: linear-gradient(to right, transparent, #1d2427 65%);
+            color: rgba(247,241,232,0.55);
+            pointer-events: none;
+          }
           .panel-specs { padding: 0 16px 10px; }
           .panel-tabs { display: flex; border-bottom: 1px solid rgba(247,241,232,0.06); }
           .panel-section--tab { display: none; }
